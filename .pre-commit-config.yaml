@@ -1,0 +1,27 @@
+exclude: "test.*py"
+repos:
+  - repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
+        language_version: python3.8
+  - repo: https://github.com/hakancelik96/unimport
+    rev: "0.6.6"
+    hooks:
+      - id: unimport
+        args: ["-r", "--exclude", "(__init__.py)|venv|env"]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: "3.8.4"
+    hooks:
+      - id: flake8
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.3.0
+    hooks:
+      - id: check-toml
+      - id: end-of-file-fixer
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.6.4"
+    hooks:
+      - id: isort
+        language_version: python3.8
+        additional_dependencies: [toml]
