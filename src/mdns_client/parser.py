@@ -22,7 +22,6 @@ class PacketParser:
         self.index = 0
         self.header = MDNSPacketHeader(*self._unpack("!HHHHHH", 6))
         self.index = 12
-        self.reference_resolved_in_last_parse: bool = False
 
     def parse(self) -> "Optional[DNSResponse]":
         questions = self.parse_questions()
@@ -91,7 +90,7 @@ class PacketParser:
             if string_bytes[0] & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
                 original_index = self.index
                 self.index = length_tuple[0] ^ (REPEAT_TYPE_FLAG << 8)
-                byte_entry = self._parse_bytes()
+                byte_entry = self._parse_name()
                 self.index = original_index
             else:
                 end_index = index + length_tuple[0]
@@ -112,51 +111,45 @@ class PacketParser:
         return self.parse_records(self.header.num_additional)
 
     def _parse_record_name(self) -> str:
-        payload = ""
+        fqdn_name = []
+        name_bytes = self._parse_name()
+        index = 0
+        while name_bytes[index] != 0x00:
+            size = name_bytes[index]
+            index += 1
+            end_index = index + size
+            fqdn_name.append(name_bytes[index:end_index].decode())
+            index = end_index
+        return ".".join(fqdn_name)
 
-        self.reference_resolved_in_last_parse = False
-        while self.buffer[self.index] != 0x00 and not self.reference_resolved_in_last_parse:
-            if len(payload) > 0:
-                payload += "."
-
-            payload += self._parse_string()
-
-        if not self.reference_resolved_in_last_parse:
-            self.index += 1
-        self.reference_resolved_in_last_parse = False
+    def _parse_name(self) -> bytes:
+        payload = b""
+        while True:
+            size = self.buffer[self.index]
+            if size == 0x00:
+                payload += bytes((0x00,))
+                self.index += 1
+                break
+            if size & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
+                payload += self._parse_repeat_name()
+                break
+            else:
+                payload += self._parse_bytes()
         return payload
 
-    def _parse_string(self) -> str:
-        payload = self._parse_bytes()
-        return payload.decode("utf-8")
-
-    def _parse_record_name_offset(self) -> str:
+    def _parse_repeat_name(self) -> bytes:
         offset_tuple = self._unpack("!H", 2)
         offset = offset_tuple[0] ^ (REPEAT_TYPE_FLAG << 8)
         real_index = self.index
         self.index = offset
-        record_name = self._parse_record_name()
+        record_name = self._parse_name()
         self.index = real_index
         return record_name
 
     def _parse_bytes(self) -> bytes:
         size = self.buffer[self.index]
-        if size & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
-            return self._parse_repeat_bytes()
-
         self.index += 1
-        self.reference_resolved_in_last_parse = False
-        return self._parse_bytes_of(int(size))
-
-    def _parse_repeat_bytes(self) -> bytes:
-        offset_tuple = self._unpack("!H", 2)
-        offset = offset_tuple[0] ^ (REPEAT_TYPE_FLAG << 8)
-        real_index = self.index
-        self.index = offset
-        record_name = self._parse_bytes()
-        self.index = real_index
-        self.reference_resolved_in_last_parse = True
-        return record_name
+        return bytes((size,)) + self._parse_bytes_of(int(size))
 
     def _parse_record_entry(self) -> bytes:
         size_tuple = self._unpack("!H", 2)
