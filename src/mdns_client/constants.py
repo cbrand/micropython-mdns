@@ -1,6 +1,6 @@
 from micropython import const
 
-MAX_PACKET_SIZE = const(1024)
+MAX_PACKET_SIZE = const(2048)
 
 MDNS_ADDR = "224.0.0.251"
 MDNS_PORT = const(5353)
@@ -28,3 +28,5 @@ TYPE_TXT = const(16)
 TYPE_AAAA = const(28)
 TYPE_SRV = const(33)
 TYPE_ANY = const(255)
+
+REPEAT_TYPE_FLAG = const(0xC0)

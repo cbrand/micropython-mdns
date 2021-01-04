@@ -1,7 +1,6 @@
 import socket
 from collections import namedtuple
 from select import select
-from typing import Awaitable
 
 import uasyncio
 
@@ -70,12 +69,12 @@ class MDNSClient:
                 continue
 
             try:
-                await self.process_packet(buffer, addr)
+                await self.process_packet(buffer)
             except Exception as e:
                 self.dprint("Issue processing packet: {}".format(e))
 
-    async def process_packet(self, buffer: bytes, addr: "Tuple[str, int]") -> None:
-        parsed_packet = parse_packet(buffer, addr[0])
+    async def process_packet(self, buffer: bytes) -> None:
+        parsed_packet = parse_packet(buffer)
         if len(self.callbacks) == 0:
             print(parsed_packet)
         else:

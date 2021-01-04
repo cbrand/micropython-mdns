@@ -1,4 +1,4 @@
-from mdns_client.constants import TYPE_CNAME, TYPE_MX, TYPE_NS, TYPE_PTR, TYPE_SOA, TYPE_SRV
+from mdns_client.constants import REPEAT_TYPE_FLAG, TYPE_CNAME, TYPE_MX, TYPE_NS, TYPE_PTR, TYPE_SOA, TYPE_SRV
 
 
 def dotted_ip_to_bytes(ip: str) -> bytes:
@@ -55,3 +55,32 @@ def pack_string(buffer: bytes, string: "List[bytes]") -> bytes:
 
 def might_have_repeatable_payload(record_type: int) -> bool:
     return record_type in (TYPE_NS, TYPE_CNAME, TYPE_PTR, TYPE_SOA, TYPE_MX, TYPE_SRV)
+
+
+def byte_count_of_lists(*list_of_lists: "Iterable[bytes]") -> int:
+    return sum(sum(len(item) for item in byte_list) for byte_list in list_of_lists)
+
+
+def fill_buffer(buffer: bytes, item: bytes, offset: int) -> int:
+    end_offset = offset + len(item)
+    buffer[offset:end_offset] = item
+    return end_offset
+
+
+def end_index_of_name(buffer: bytes, offset: int) -> int:
+    """
+    Expects the offset to be in the beginning of a name and
+    scans through the buffer. It returns the last index of the
+    string representation.
+    """
+    while offset < len(buffer):
+        string_part_length = buffer[offset]
+        if string_part_length & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
+            # Repeat type flags are always at the end. Meaning the reference
+            # should be dereferenced and then the name is completed
+            return offset + 2
+        elif string_part_length == 0x00:
+            return offset + 1
+        offset += string_part_length
+
+    raise IndexError("Could not idenitfy end of index")
