@@ -30,3 +30,5 @@ TYPE_SRV = const(33)
 TYPE_ANY = const(255)
 
 REPEAT_TYPE_FLAG = const(0xC0)
+
+LOCAL_MDNS_SUFFIX = ".local"

@@ -1,3 +1,7 @@
+import struct
+
+import uasyncio
+
 from mdns_client.constants import REPEAT_TYPE_FLAG, TYPE_CNAME, TYPE_MX, TYPE_NS, TYPE_PTR, TYPE_SOA, TYPE_SRV
 
 
@@ -84,3 +88,13 @@ def end_index_of_name(buffer: bytes, offset: int) -> int:
         offset += string_part_length
 
     raise IndexError("Could not idenitfy end of index")
+
+
+def a_record_rdata_to_string(rdata: bytes) -> str:
+    ip_numbers = struct.unpack("!BBBB", rdata)
+    return ".".join(str(ip_number) for ip_number in ip_numbers)
+
+
+async def set_after_timeout(event: uasyncio.Event, timeout: float):
+    await uasyncio.sleep(timeout)
+    event.set()

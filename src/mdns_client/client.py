@@ -1,19 +1,30 @@
+import gc
 import socket
+import time
 from collections import namedtuple
 from select import select
 
 import uasyncio
 
-from .constants import MAX_PACKET_SIZE, MDNS_ADDR, MDNS_PORT
+from .constants import CLASS_IN, LOCAL_MDNS_SUFFIX, MAX_PACKET_SIZE, MDNS_ADDR, MDNS_PORT, TYPE_A
 from .parser import parse_packet
-from .structs import DNSQuestion, DNSQuestionWrapper, DNSResponse
-from .util import dotted_ip_to_bytes
+from .structs import DNSQuestion, DNSQuestionWrapper, DNSRecord, DNSResponse
+from .util import a_record_rdata_to_string, dotted_ip_to_bytes, set_after_timeout
 
 
-class Callback(namedtuple("Callback", ["callback", "remove_if"])):
+class Callback(namedtuple("Callback", ["id", "callback", "remove_if", "timeout", "created_ticks"])):
     id: int
     callback: "Callable[[DNSResponse], Awaitable[None]]"
     remove_if: "Optional[Callable[[DNSResponse], Awaitable[bool]]]"
+    timeout: "Optional[float]"
+    created_ticks: int
+
+    @property
+    def timedout(self) -> bool:
+        if self.timeout is None:
+            return False
+
+        return self.created_ticks + int(self.timeout * 1000) < time.ticks_ms()
 
 
 class MDNSClient:
@@ -21,16 +32,25 @@ class MDNSClient:
         self.socket: "Optional[socket.socket]" = None
         self.local_addr = local_addr
         self.debug = debug
+        self.print_packets = debug
         self.stopped = False
         self.callbacks: "Dict[int, Callback]" = {}
         self.callback_fd_count: int = 0
+        self.mdns_timeout = 2.0
 
     def add_callback(
         self,
         callback: "Callable[[DNSResponse], Awaitable[None]]",
         remove_if: "Optional[Callable[[DNSResponse], Awaitable[bool]]]" = None,
+        timeout: "Optional[int]" = None,
     ) -> None:
-        callback_config = Callback(id=self.callback_fd_count, callback=callback, remove_if=remove_if)
+        callback_config = Callback(
+            id=self.callback_fd_count,
+            callback=callback,
+            remove_if=remove_if,
+            timeout=timeout,
+            created_ticks=time.ticks_ms(),
+        )
         self.callback_fd_count += 1
         self.dprint("Adding callback with id {}".format(callback_config.id))
         self.callbacks[callback_config.id] = callback_config
@@ -72,20 +92,29 @@ class MDNSClient:
                 await self.process_packet(buffer)
             except Exception as e:
                 self.dprint("Issue processing packet: {}".format(e))
+            finally:
+                gc.collect()
 
     async def process_packet(self, buffer: bytes) -> None:
         parsed_packet = parse_packet(buffer)
         if len(self.callbacks) == 0:
-            print(parsed_packet)
+            if self.print_packets:
+                print(parsed_packet)
         else:
             loop = uasyncio.get_event_loop()
             for callback in self.callbacks.values():
                 loop.create_task(callback.callback(parsed_packet))
-                if callback.remove_if is not None:
+                if callback.timedout:
+                    self.remove_if_present(callback)
+                elif callback.remove_if is not None:
                     loop.create_task(self.remove_if_check(callback, parsed_packet))
 
     async def remove_if_check(self, callback: Callback, message: DNSResponse) -> None:
-        if callback.id in self.callbacks and await callback.remove_if(message):
+        if await callback.remove_if(message):
+            return self.remove_if_present(callback)
+
+    def remove_if_present(self, callback: Callback):
+        if callback.id in self.callbacks:
             self.dprint("Removing callback with id {}".format(callback.id))
             del self.callbacks[callback.id]
 
@@ -93,6 +122,61 @@ class MDNSClient:
         assert isinstance(self.socket, socket.socket), "Socket must be set"
         question_wrapper = DNSQuestionWrapper(questions=questions)
         self.socket.sendto(question_wrapper.to_bytes(), (MDNS_ADDR, MDNS_PORT))
+
+    async def getaddrinfo(
+        self,
+        host: "Union[str, bytes, bytearray]",
+        port: "Union[str, int, None]",
+        family: int = 0,
+        type: int = 0,
+        proto: int = 0,
+        flags: int = 0,
+    ) -> "List[Tuple[int, int, int, str, Tuple[str, int]]]":
+        hostcheck = host
+        while hostcheck.endswith("."):
+            hostcheck = hostcheck[:-1]
+        if hostcheck.endswith(LOCAL_MDNS_SUFFIX) and family in (0, socket.AF_INET):
+            host, resolved_ip = await self.mdns_getaddr(host)
+            return [(socket.AF_INET, type or socket.SOCK_STREAM, proto, host, (resolved_ip, port))]
+        else:
+            self.dprint("Resolving dns request host {} and port {}".format(host, port))
+            return socket.getaddrinfo(host, port, family, type, proto, flags)
+
+    async def mdns_getaddr(self, host: str) -> Tuple[str, str]:
+        self.dprint("Resolving mdns request host {}".format(host))
+        response = self.scan_for_response(TYPE_A, host, self.mdns_timeout)
+        await self.send_question(DNSQuestion(host, TYPE_A, CLASS_IN))
+        record = await response
+        if record is None:
+            # The original socket implementation returns -202 on the ESP32 as an error code
+            raise OSError(-202)
+
+        return record.name, a_record_rdata_to_string(record.rdata)
+
+    async def scan_for_response(self, expected_type: int, name: str, timeout: float = 1.5) -> "Optional[DNSRecord]":
+        def matching_record(dns_response: DNSResponse) -> "Optional[DNSRecord]":
+            for record in dns_response.records:
+                if record.record_type == expected_type and record.name == name:
+                    return record
+
+        result = {"data": None, "event": uasyncio.Event()}
+
+        async def scan_response(dns_response: DNSResponse) -> None:
+            record = matching_record(dns_response)
+            if record is None:
+                return None
+            result["data"] = record
+            result["event"].set()
+
+        loop = uasyncio.get_event_loop()
+        loop.create_task(set_after_timeout(result["event"], timeout))
+
+        async def is_match(dns_response: DNSResponse) -> bool:
+            return matching_record(dns_response) is not None
+
+        self.add_callback(scan_response, is_match, timeout)
+        await result["event"].wait()
+        return result["data"]
 
     def dprint(self, message: str) -> None:
         if self.debug:

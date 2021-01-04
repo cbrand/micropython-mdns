@@ -81,6 +81,12 @@ class DNSResponse(
     authorities: "List[DNSRecord]"
     additional: "List[DNSRecord]"
 
+    @property
+    def records(self) -> "Iterable[DNSRecord]":
+        yield from self.answers
+        yield from self.authorities
+        yield from self.additional
+
     def to_bytes(self) -> bytes:
         question_bytes = [question.to_bytes() for question in self.questions]
         answer_bytes = [answer.to_bytes() for answer in self.answers]
