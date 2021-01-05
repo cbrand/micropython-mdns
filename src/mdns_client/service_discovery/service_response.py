@@ -12,13 +12,18 @@ class ServiceResponse(SRVMixin):
         self.port = port
         self.target = target
         self.ips = set()
+        self.txt_records = None
         self.invalid_at = None
         self.refreshed_at = None
         self.ttl = None
 
     def __repr__(self) -> str:
-        return "<ServiceResponse name={} priority={} weight={} target={} port={} ips={}>".format(
-            self.name, self.priority, self.weight, self.target, self.port, self.ips
+        if self.txt_records is None:
+            txt_records = ""
+        else:
+            txt_records = " txt={}".format(self.txt_records)
+        return "<ServiceResponse name={} priority={} weight={} target={} port={} ips={}{}>".format(
+            self.name, self.priority, self.weight, self.target, self.port, self.ips, txt_records
         )
 
     def __hash__(self) -> int:

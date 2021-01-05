@@ -141,7 +141,15 @@ class ServiceDiscovery:
             self._remove_item(monitored_service)
 
     def _remove_item(self, service: ServiceResponse) -> None:
-        target = service.target
+        self._remove_item_from_target(service.target, service)
+        self._remove_item_from_target(service.name, service)
+
+        service_dict = self.monitored_services.get(service.protocol, None)
+        if service in service_dict:
+            self._current_change.removed.add(service)
+            del service_dict[service]
+
+    def _remove_item_from_target(self, target: str, service: ServiceResponse) -> None:
         res = self._records_by_target.get(target, None)
         if res:
             if service in res:
@@ -149,16 +157,11 @@ class ServiceDiscovery:
             if len(res) == 0:
                 del self._records_by_target[target]
 
-        service_dict = self.monitored_services.get(service.protocol, None)
-        if service in service_dict:
-            self._current_change.removed.add(service)
-            del service_dict[service]
-
     async def _request_once(self, service_protocol: ServiceProtocol) -> None:
         await self.client.send_question(DNSQuestion(service_protocol.to_name(), TYPE_PTR, CLASS_IN))
 
     async def _on_response(self, response: DNSResponse) -> None:
-        for message in response.records:
+        for message in self._records_of(response):
             self._on_record(message)
 
         questions = []
@@ -170,6 +173,9 @@ class ServiceDiscovery:
             await self.client.send_question(*questions)
 
         gc.collect()
+
+    def _records_of(self, response: DNSResponse) -> "Iterable[DNSRecord]":
+        return response.records
 
     def _on_record(self, record: DNSRecord) -> None:
         if record.record_type == TYPE_PTR:
@@ -226,6 +232,7 @@ class ServiceDiscovery:
             old_response.refreshed_at = None
             old_response.invalid_at = response.invalid_at
 
+        self._records_by_target.setdefault(response.name, set()).add(response)
         self._records_by_target.setdefault(response.target, set()).add(response)
         self._enqueued_target_records.add(srv_record.target)
 

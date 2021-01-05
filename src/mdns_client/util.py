@@ -102,7 +102,8 @@ def name_list_to_name(data: "List[str]") -> str:
 def bytes_to_name_list(data: bytes) -> "List[str]":
     index = 0
     item = []
-    while True:
+    data_length = len(data)
+    while index < data_length:
         length_byte = data[index]
         if length_byte == 0x00:
             break
