@@ -1,3 +1,6 @@
+.DEFAULT_GOAL := build-compile
+
+build-compile: build compile
 
 erase:
 	./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
@@ -28,3 +31,15 @@ compile-and-shell: compile-and-flash shell
 
 shell:
 	picocom /dev/ttyUSB0 -b115200
+
+build-and-upload: build upload
+
+build:
+	rm -rf src/dist/*.tar.gz*
+	cd src && python setup.py sdist
+
+upload:
+	twine upload src/dist/*.tar.gz
+
+generatecligif:
+	docker run --rm -i -t -u $$(id -u) -v $(CURDIR):/data asciinema/asciicast2gif -w 116 -h 20 images/service-discovery.rec images/service-discovery.gif

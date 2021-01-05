@@ -2,6 +2,8 @@
 
 [![PyPi](https://img.shields.io/pypi/v/micropython-mdns) ![MIT licensed](https://img.shields.io/pypi/l/micropython-mdns)](https://pypi.org/project/micropython-mdns/)
 
+![Image showing service discovery](images/service-discovery.gif)
+
 A pure Python implementation of [MDNS](https://tools.ietf.org/html/rfc6762) and the [Service Discovery](https://tools.ietf.org/html/rfc6763) protocol over MDNS 
 for [MicroPython](https://micropython.org/).
 
