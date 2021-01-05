@@ -54,6 +54,11 @@ class Client:
         self.callback_fd_count += 1
         self.dprint("Adding callback with id {}".format(callback_config.id))
         self.callbacks[callback_config.id] = callback_config
+        if self.stopped:
+            self.dprint("Added consumer on stopped mdns client. Starting it now.")
+            self.stopped = False
+            loop = uasyncio.get_event_loop()
+            loop.create_task(self.start())
         return callback_config
 
     def _make_socket(self) -> socket.socket:
@@ -65,6 +70,7 @@ class Client:
         return sock
 
     async def start(self) -> None:
+        self.stopped = False
         self._init_socket()
         await self.consume()
 
@@ -76,6 +82,8 @@ class Client:
 
     def stop(self) -> None:
         self.stopped = True
+        if self.socket is not None:
+            self.socket.close()
 
     async def consume(self) -> None:
         while not self.stopped:
@@ -83,7 +91,7 @@ class Client:
             await uasyncio.sleep_ms(100)
 
     async def process_waiting_data(self) -> None:
-        while True:
+        while not self.stopped:
             readers, _, _ = select([self.socket], [], [], 0)
             if not readers:
                 break
@@ -105,6 +113,7 @@ class Client:
             try:
                 await self.process_packet(buffer)
             except Exception as e:
+                raise e
                 self.dprint("Issue processing packet: {}".format(e))
             finally:
                 gc.collect()
@@ -135,10 +144,24 @@ class Client:
             self.dprint("Removing callback with id {}".format(callback_id))
             del self.callbacks[callback_id]
 
+        if len(self.callbacks) == 0 and not self.print_packets:
+            self.dprint("Stopping consumption pipeline as no listeners exist")
+            self.stop()
+
     async def send_question(self, *questions: DNSQuestion) -> None:
-        assert isinstance(self.socket, socket.socket), "Socket must be set"
         question_wrapper = DNSQuestionWrapper(questions=questions)
-        self.socket.sendto(question_wrapper.to_bytes(), (MDNS_ADDR, MDNS_PORT))
+        self._send_bytes(question_wrapper.to_bytes())
+
+    async def send_response(self, response: DNSResponse) -> None:
+        self._send_bytes(response.to_bytes())
+
+    def _send_bytes(self, payload: bytes) -> None:
+        self._init_socket_if_not_done()
+        self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
+
+    def _init_socket_if_not_done(self) -> None:
+        if self.socket is None:
+            self._init_socket()
 
     async def getaddrinfo(
         self,

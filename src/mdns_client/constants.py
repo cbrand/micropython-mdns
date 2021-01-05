@@ -9,6 +9,7 @@ DNS_TTL = const(2 * 60)
 FLAGS_QR_MASK = const(0x8000)
 FLAGS_QR_QUERY = const(0x0000)
 FLAGS_QR_RESPONSE = const(0x8000)
+FLAGS_QR_AUTHORITATIVE = const(0x0400)
 
 FLAGS_AA = const(0x0400)
 
@@ -29,6 +30,7 @@ TYPE_AAAA = const(28)
 TYPE_SRV = const(33)
 TYPE_ANY = const(255)
 
+DEFAULT_TTL = const(120)
 REPEAT_TYPE_FLAG = const(0xC0)
 
 LOCAL_MDNS_SUFFIX = ".local"

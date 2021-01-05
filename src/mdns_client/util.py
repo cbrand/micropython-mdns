@@ -41,7 +41,14 @@ def string_packed_len(string: "List[bytes]") -> int:
     return sum(len(i) + 1 for i in string) + 1
 
 
-def pack_string(buffer: bytes, string: "List[bytes]") -> bytes:
+def name_to_bytes(name: str) -> bytes:
+    name_bytes = check_name(name)
+    buffer = bytearray(len(name_bytes) + len(name))
+    pack_name(buffer, name_bytes)
+    return buffer
+
+
+def pack_name(buffer: bytes, string: "List[bytes]") -> None:
     """
     Pack a string into the start of the buffer
     We don't support writing with name compression, BIWIOMS
@@ -55,6 +62,13 @@ def pack_string(buffer: bytes, string: "List[bytes]") -> bytes:
         buffer[after_size_next_index:end_of_pack_name_index] = part
         output_index += part_length + 1
     buffer[output_index] = 0
+
+
+def string_to_bytes(item: str) -> bytes:
+    buffer = bytearray(len(item) + 1)
+    buffer[0] = len(item)
+    buffer[1:] = item.encode("utf-8")
+    return buffer
 
 
 def might_have_repeatable_payload(record_type: int) -> bool:
@@ -124,3 +138,13 @@ def a_record_rdata_to_string(rdata: bytes) -> str:
 async def set_after_timeout(event: uasyncio.Event, timeout: float):
     await uasyncio.sleep(timeout)
     event.set()
+
+
+def txt_data_to_bytes(txt_data: "Dict[str, Union[str, List[str]]]") -> bytes:
+    payload = b""
+    for key, values in txt_data.items():
+        if isinstance(values, str):
+            values = [values]
+        for value in values:
+            payload += string_to_bytes("{}={}".format(key, value))
+    return payload

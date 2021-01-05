@@ -2,17 +2,16 @@ import time
 from collections import namedtuple
 from struct import pack_into, unpack_from
 
-from .constants import CLASS_MASK, CLASS_UNIQUE, FLAGS_QR_QUERY
-from .util import byte_count_of_lists, bytes_to_name, check_name, fill_buffer, pack_string, string_packed_len
-
-
-class DNSEntry:
-    def __init__(self, name: str, type_: int, class_: int) -> None:
-        self.key = name.lower()
-        self.name = name
-        self.type = type_
-        self.class_ = class_ & CLASS_MASK
-        self.unique = (class_ & CLASS_UNIQUE) != 0
+from .constants import FLAGS_QR_QUERY, FLAGS_QR_RESPONSE
+from .util import (
+    byte_count_of_lists,
+    bytes_to_name,
+    check_name,
+    fill_buffer,
+    name_to_bytes,
+    pack_name,
+    string_packed_len,
+)
 
 
 class DNSQuestion(namedtuple("DNSQuestion", ["query", "type", "query_class"])):
@@ -24,7 +23,7 @@ class DNSQuestion(namedtuple("DNSQuestion", ["query", "type", "query_class"])):
         checked_query = self.checked_query
         query_len = string_packed_len(checked_query)
         buffer = bytearray(query_len + 4)
-        pack_string(buffer, self.checked_query)
+        pack_name(buffer, self.checked_query)
         pack_into("!HH", buffer, query_len, self.type, self.query_class)
         return buffer
 
@@ -63,7 +62,7 @@ class DNSRecord(namedtuple("DNSRecord", ["name", "record_type", "query_class", "
         rdata_length = len(self.rdata)
         payload_length = 2 + rdata_length
         buffer = bytearray(header_length + payload_length)
-        pack_string(buffer, checked_name)
+        pack_name(buffer, checked_name)
         index = query_len
         pack_into("!HHLH", buffer, index, self.record_type, self.query_class, self.time_to_live, rdata_length)
         index += 10
@@ -85,6 +84,14 @@ class DNSResponse(
     answers: "List[DNSRecord]"
     authorities: "List[DNSRecord]"
     additional: "List[DNSRecord]"
+
+    @property
+    def is_response(self) -> bool:
+        return self.message_type & FLAGS_QR_RESPONSE == FLAGS_QR_RESPONSE
+
+    @property
+    def is_request(self) -> bool:
+        return not self.is_response
 
     @property
     def records(self) -> "Iterable[DNSRecord]":
@@ -150,3 +157,10 @@ class SRVRecord(namedtuple("SRVRecord", ["name", "priority", "weight", "port", "
         priority, weight, port = unpack_from("!HHH", dns_record.rdata, 0)
         target = bytes_to_name(dns_record.rdata[6:])
         return SRVRecord(name, priority, weight, port, target)
+
+    def to_bytes(self) -> bytes:
+        target_name = name_to_bytes(self.target)
+        buffer = bytearray(6 + len(target_name))
+        pack_into("!HHH", buffer, 0, self.priority, self.weight, self.port)
+        buffer[6:] = target_name
+        return buffer
