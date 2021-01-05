@@ -113,7 +113,6 @@ class Client:
             try:
                 await self.process_packet(buffer)
             except Exception as e:
-                raise e
                 self.dprint("Issue processing packet: {}".format(e))
             finally:
                 gc.collect()
