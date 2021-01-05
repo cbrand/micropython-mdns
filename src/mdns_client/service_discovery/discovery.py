@@ -50,6 +50,7 @@ class ServiceDiscovery:
         if self.started:
             raise RuntimeError("Already started")
         self.started = True
+        self.dprint("Start discovery module")
 
         loop = uasyncio.get_event_loop()
         loop.create_task(self._change_loop())
@@ -116,6 +117,10 @@ class ServiceDiscovery:
     def stop_watching(self, protocol: str, service: str) -> None:
         self._remove_from_monitor(ServiceProtocol(protocol, service))
 
+    def current(self, protocol: str, service: str) -> "Iterable[ServiceResponse]":
+        service_protocol = ServiceProtocol(protocol, service)
+        return tuple(self.monitored_services.get(service_protocol, {}).values())
+
     async def query_once(self, protocol: str, service: str, timeout: float = None) -> "Iterable[ServiceResponse]":
         timeout = self.timeout if timeout is None else timeout
         self.start_if_necessary()
@@ -131,12 +136,15 @@ class ServiceDiscovery:
         return result
 
     def _register_monitored_service(self, service_protocol: ServiceProtocol) -> dict:
+        if service_protocol not in self.monitored_services:
+            self.dprint("Monitoring service protocol: {}".format(service_protocol))
         return self.monitored_services.setdefault(service_protocol, dict())
 
     def _remove_from_monitor(self, service_protocol: ServiceProtocol) -> None:
         if service_protocol not in self.monitored_services:
             return
 
+        self.dprint("Removing service protocol from monitoring: {}".format(service_protocol))
         for monitored_service in self.monitored_services[service_protocol]:
             self._remove_item(monitored_service)
 

@@ -33,7 +33,7 @@ class Client:
         self.local_addr = local_addr
         self.debug = debug
         self.print_packets = debug
-        self.stopped = False
+        self.stopped = True
         self.callbacks: "Dict[int, Callback]" = {}
         self.callback_fd_count: int = 0
         self.mdns_timeout = 2.0

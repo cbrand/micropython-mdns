@@ -55,10 +55,13 @@ class Responder:
 
         if host_resolver is None:
             # setting once a host name
-            postfix = str(random.randint(0x800000, 0xFFFFFF))[2:]
+            postfix = self.generate_random_postfix()
             self.host_resolver = host_resolver = "micropython-{}".format(postfix)
 
         return host_resolver
+
+    def generate_random_postfix(self) -> str:
+        return str(random.randint(0x800000, 0xFFFFFF))[2:]
 
     @property
     def host_fqdn(self) -> Optional[str]:
