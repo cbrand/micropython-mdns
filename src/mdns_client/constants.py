@@ -1,6 +1,6 @@
 from micropython import const
 
-MAX_PACKET_SIZE = const(2048)
+MAX_PACKET_SIZE = const(1700)
 
 MDNS_ADDR = "224.0.0.251"
 MDNS_PORT = const(5353)

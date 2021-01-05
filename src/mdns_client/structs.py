@@ -1,8 +1,9 @@
+import time
 from collections import namedtuple
-from struct import pack_into
+from struct import pack_into, unpack_from
 
 from .constants import CLASS_MASK, CLASS_UNIQUE, FLAGS_QR_QUERY
-from .util import byte_count_of_lists, check_name, fill_buffer, pack_string, string_packed_len
+from .util import byte_count_of_lists, bytes_to_name, check_name, fill_buffer, pack_string, string_packed_len
 
 
 class DNSEntry:
@@ -70,6 +71,10 @@ class DNSRecord(namedtuple("DNSRecord", ["name", "record_type", "query_class", "
         buffer[index:end_index] = self.rdata
         return buffer
 
+    @property
+    def invalid_at(self) -> int:
+        return time.ticks_ms() + self.time_to_live * 1000
+
 
 class DNSResponse(
     namedtuple("DNSResponse", ["transaction_id", "message_type", "questions", "answers", "authorities", "additional"])
@@ -115,3 +120,33 @@ class DNSResponse(
         for additional_byte_list in additional_bytes:
             index = fill_buffer(buffer, additional_byte_list, index)
         return buffer
+
+
+class ServiceProtocol(namedtuple("ServiceProtocol", ["protocol", "service"])):
+    @property
+    def domain(self) -> str:
+        return "local"
+
+    def to_name(self) -> str:
+        return "{}.{}.{}".format(self.protocol, self.service, self.domain)
+
+
+ServiceResponse = namedtuple("ServiceResponse", ["priority", "weight", "port", "target"])
+
+
+class SRVMixin:
+    name: str
+
+    @property
+    def protocol(self) -> ServiceProtocol:
+        service_name_data = self.name.split(".")
+        return ServiceProtocol(service_name_data[-3], service_name_data[-2])
+
+
+class SRVRecord(namedtuple("SRVRecord", ["name", "priority", "weight", "port", "target"]), SRVMixin):
+    @classmethod
+    def from_dns_record(cls, dns_record: DNSRecord) -> "SRVRecord":
+        name = dns_record.name
+        priority, weight, port = unpack_from("!HHH", dns_record.rdata, 0)
+        target = bytes_to_name(dns_record.rdata[6:])
+        return SRVRecord(name, priority, weight, port, target)

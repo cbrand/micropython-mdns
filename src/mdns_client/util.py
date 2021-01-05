@@ -90,6 +90,31 @@ def end_index_of_name(buffer: bytes, offset: int) -> int:
     raise IndexError("Could not idenitfy end of index")
 
 
+def bytes_to_name(data: bytes) -> str:
+    item = bytes_to_name_list(data)
+    return name_list_to_name(item)
+
+
+def name_list_to_name(data: "List[str]") -> str:
+    return ".".join(data)
+
+
+def bytes_to_name_list(data: bytes) -> "List[str]":
+    index = 0
+    item = []
+    while True:
+        length_byte = data[index]
+        if length_byte == 0x00:
+            break
+
+        index += 1
+        end_index = index + length_byte
+        data_item = data[index:end_index]
+        item.append(data_item.decode("utf-8"))
+        index = end_index
+    return item
+
+
 def a_record_rdata_to_string(rdata: bytes) -> str:
     ip_numbers = struct.unpack("!BBBB", rdata)
     return ".".join(str(ip_number) for ip_number in ip_numbers)

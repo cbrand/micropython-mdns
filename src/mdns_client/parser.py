@@ -85,19 +85,22 @@ class PacketParser:
         payload = b""
         index = 0
         while index < len(string_bytes):
-            length_tuple = struct.unpack_from("!H", string_bytes, index)
-            index += 2
-            if string_bytes[0] & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
+            length = string_bytes[index]
+            if length & REPEAT_TYPE_FLAG == REPEAT_TYPE_FLAG:
                 original_index = self.index
+                length_tuple = struct.unpack_from("!H", string_bytes, index)
                 self.index = length_tuple[0] ^ (REPEAT_TYPE_FLAG << 8)
                 byte_entry = self._parse_name()
                 self.index = original_index
+                index += 2
             else:
-                end_index = index + length_tuple[0]
+                index += 1
+                end_index = index + length
                 byte_entry = string_bytes[index:end_index]
+                length_byte = struct.pack("!B", len(byte_entry))
+                byte_entry = length_byte + byte_entry
                 index = end_index
 
-            payload += struct.pack("!H", len(byte_entry))
             payload += byte_entry
         return payload
 
