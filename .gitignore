@@ -147,3 +147,4 @@ dmypy.json
 firmware.bin
 tmp
 main.py
+src/MANIFEST

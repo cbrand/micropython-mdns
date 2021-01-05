@@ -22,6 +22,10 @@ Advertisement = namedtuple("Advertisement", ["port", "data"])
 MDNS_SERVICE_DISCOVERY = "_services._dns-sd._udp.local"
 
 
+def generate_random_postfix() -> str:
+    return str(random.randint(0x800000, 0xFFFFFF))[2:]
+
+
 class Responder:
     def __init__(
         self,
@@ -61,7 +65,7 @@ class Responder:
         return host_resolver
 
     def generate_random_postfix(self) -> str:
-        return str(random.randint(0x800000, 0xFFFFFF))[2:]
+        return generate_random_postfix()
 
     @property
     def host_fqdn(self) -> Optional[str]:

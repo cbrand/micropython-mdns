@@ -139,14 +139,18 @@ class Client:
     def remove_if_present(self, callback: Callback) -> None:
         self.remove_id(callback.id)
 
-    def remove_id(self, callback_id: int) -> None:
+    def remove_id(self, callback_id: int) -> bool:
+        deleted = False
         if callback_id in self.callbacks:
             self.dprint("Removing callback with id {}".format(callback_id))
             del self.callbacks[callback_id]
+            deleted = True
 
         if len(self.callbacks) == 0 and not self.print_packets:
             self.dprint("Stopping consumption pipeline as no listeners exist")
             self.stop()
+
+        return deleted
 
     async def send_question(self, *questions: DNSQuestion) -> None:
         question_wrapper = DNSQuestionWrapper(questions=questions)
