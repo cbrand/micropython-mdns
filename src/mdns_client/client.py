@@ -27,7 +27,7 @@ class Callback(namedtuple("Callback", ["id", "callback", "remove_if", "timeout",
         return self.created_ticks + int(self.timeout * 1000) < time.ticks_ms()
 
 
-class MDNSClient:
+class Client:
     def __init__(self, local_addr: str, debug: bool = False):
         self.socket: "Optional[socket.socket]" = None
         self.local_addr = local_addr
@@ -43,7 +43,7 @@ class MDNSClient:
         callback: "Callable[[DNSResponse], Awaitable[None]]",
         remove_if: "Optional[Callable[[DNSResponse], Awaitable[bool]]]" = None,
         timeout: "Optional[int]" = None,
-    ) -> None:
+    ) -> Callback:
         callback_config = Callback(
             id=self.callback_fd_count,
             callback=callback,
@@ -54,6 +54,7 @@ class MDNSClient:
         self.callback_fd_count += 1
         self.dprint("Adding callback with id {}".format(callback_config.id))
         self.callbacks[callback_config.id] = callback_config
+        return callback_config
 
     def _make_socket(self) -> socket.socket:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -64,11 +65,14 @@ class MDNSClient:
         return sock
 
     async def start(self) -> None:
+        self._init_socket()
+        await self.consume()
+
+    def _init_socket(self) -> None:
         if self.socket is not None:
             self.socket.close()
         self.socket = self._make_socket()
         self.socket.bind(("", MDNS_PORT))
-        await self.consume()
 
     def stop(self) -> None:
         self.stopped = True
@@ -84,7 +88,17 @@ class MDNSClient:
             if not readers:
                 break
 
-            buffer, addr = self.socket.recvfrom(MAX_PACKET_SIZE)
+            try:
+                buffer, addr = self.socket.recvfrom(MAX_PACKET_SIZE)
+            except MemoryError:
+                # This seems to happen here without SPIRAM sometimes.
+                self.dprint(
+                    "Issue processing network data due to insufficient memory. "
+                    "Rebooting the socket to free up cache buffer."
+                )
+                self._init_socket()
+                continue
+
             if addr[0] == self.local_addr:
                 continue
 
@@ -113,10 +127,13 @@ class MDNSClient:
         if await callback.remove_if(message):
             return self.remove_if_present(callback)
 
-    def remove_if_present(self, callback: Callback):
-        if callback.id in self.callbacks:
-            self.dprint("Removing callback with id {}".format(callback.id))
-            del self.callbacks[callback.id]
+    def remove_if_present(self, callback: Callback) -> None:
+        self.remove_id(callback.id)
+
+    def remove_id(self, callback_id: int) -> None:
+        if callback_id in self.callbacks:
+            self.dprint("Removing callback with id {}".format(callback_id))
+            del self.callbacks[callback_id]
 
     async def send_question(self, *questions: DNSQuestion) -> None:
         assert isinstance(self.socket, socket.socket), "Socket must be set"
