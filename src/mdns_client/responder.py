@@ -114,16 +114,17 @@ class Responder:
             self._on_txt_question(question)
 
     def _on_ptr_question(self, question: DNSQuestion) -> None:
-        if question.query == MDNS_SERVICE_DISCOVERY:
+        query = question.query
+        if query == MDNS_SERVICE_DISCOVERY:
             self._send_service_discovery_ptrs()
             return
 
-        if question.query not in self._advertisements:
+        if query not in self._advertisements:
             return
 
-        self._dprint("Responding to DNS PTR question for {}".format(question.query))
-        answers = [self._ptr_record_for(question.query)]
-        additional = [self._srv_record_for(question.query), self._a_record()]
+        self._dprint("Responding to DNS PTR question for {}".format(query))
+        answers = [self._ptr_record_for(query)]
+        additional = [self._srv_record_for(query), self._txt_record_for(query), self._a_record()]
         self._send_response(answers, additional)
 
     def _send_service_discovery_ptrs(self) -> None:

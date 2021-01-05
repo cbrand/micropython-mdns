@@ -146,5 +146,7 @@ def txt_data_to_bytes(txt_data: "Dict[str, Union[str, List[str]]]") -> bytes:
         if isinstance(values, str):
             values = [values]
         for value in values:
+            if value is None:
+                value = ""
             payload += string_to_bytes("{}={}".format(key, value))
     return payload
