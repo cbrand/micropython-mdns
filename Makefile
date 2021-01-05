@@ -3,11 +3,11 @@
 build-compile: build compile
 
 erase:
-	./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
+	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
 
 
 flash:
-	./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 firmware.bin
+	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 firmware.bin
 
 copy-main:
 	./venv/bin/ampy -p /dev/ttyUSB0 put main.py /main.py

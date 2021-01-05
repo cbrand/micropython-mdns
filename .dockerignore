@@ -3,3 +3,5 @@ venv
 .ipynb_checkpoints
 main.py
 dist
+__pycache__
+*.pyc

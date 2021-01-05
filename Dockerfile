@@ -42,4 +42,6 @@ WORKDIR /opt/app/
 
 WORKDIR /opt/app/micropython/ports/esp32
 
+ADD src/mdns_client modules/mdns_client
+
 RUN make
