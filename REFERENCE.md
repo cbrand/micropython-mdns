@@ -8,7 +8,7 @@ The document doesn't outline all classes and functionality in the library.
 Instead, it outlines the API which can be seen as **stable** and intended for public use.
 
 ## `mdns_client.Client` ##
-[![Link to the mdns_client.Client code](https://img.shields.io/badge/mdns__client-Client-lightgrey)](src/mdns_client/client.py#30)
+[![Link to the mdns_client.Client code](https://img.shields.io/badge/mdns__client-Client-orange)](src/mdns_client/client.py#30)
 
 The client includes the basic logic for requesting and sending MDNS packages. It has a pluggable system to react on MDNS Record changes on the network.
 
@@ -108,7 +108,7 @@ the record name as the first entry and the ipv4 address as the second
 tuple entry.
 
 ## `mdns_client.responder.Responder` ##
-[![Link to the mdns_client.responder.Responder code](https://img.shields.io/badge/mdns__client.responder-Responder-lightgrey)](src/mdns_client/responer.py#29)
+[![Link to the mdns_client.responder.Responder code](https://img.shields.io/badge/mdns__client.responder-Responder-orange)](src/mdns_client/responer.py#29)
 
 This class is used for supporting service annoucements for own services
 supported by the application running on this Microcontroller.
@@ -165,8 +165,8 @@ Responder.withdraw(protocol: str, service: str) -> None
 Removes the service annoucement support of the passed `protocol`/`service` tuple.
 
 ## `mdns_client.service_discovery.ServiceDiscovery` ##
-[![Link to the mdns_client.service_discovery.ServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery-ServiceDiscovery-lightgrey)](src/mdns_client/service_discovery/discovery.py#24)
-[![Link to the mdns_client.service_discovery.txt_discovery.TxtServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery.txt__discovery-TXTServiceDiscovery-lightgrey)](src/mdns_client/service_discovery/txt_discovery.py#15)
+[![Link to the mdns_client.service_discovery.ServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery-ServiceDiscovery-orange)](src/mdns_client/service_discovery/discovery.py#24)
+[![Link to the mdns_client.service_discovery.txt_discovery.TxtServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery.txt__discovery-TXTServiceDiscovery-orange)](src/mdns_client/service_discovery/txt_discovery.py#15)
 
 Also [`mdns_client.service_discovery.txt_discovery.TXTServiceDiscovery`](src/mdns_client/service_discovery/txt_discovery.py#15)
 provides the same interface.
@@ -246,7 +246,7 @@ Returns the currently known services which provide the passed `protocol`/`servic
 ## Structs ##
 
 ### `mdns_client.struct.DNSResponse` ###
-[![Link to the mdns_client.struct.DNSResponse code](https://img.shields.io/badge/mdns__client.structs-DNSResponse-lightgrey)](src/mdns_client/structs.py#78)
+[![Link to the mdns_client.struct.DNSResponse code](https://img.shields.io/badge/mdns__client.structs-DNSResponse-orange)](src/mdns_client/structs.py#78)
 
 The DNSResponse is a namedtuple representing a received or to be sent MDNS-Response.
 
@@ -274,7 +274,7 @@ inside of a UDP package.
 
 
 ### `mdns_client.struct.DNSRecord` ###
-[![Link to the mdns_client.struct.DNSRecord code](https://img.shields.io/badge/mdns__client.structs-DNSRecord-lightgrey)](src/mdns_client/structs.py#47)
+[![Link to the mdns_client.struct.DNSRecord code](https://img.shields.io/badge/mdns__client.structs-DNSRecord-orange)](src/mdns_client/structs.py#47)
 
 The DNSRecord namedtuple represents an individual record which has been
 received or will be sent via a DNSResponse.
@@ -299,7 +299,7 @@ Returns a representation of the `DNSRecord` in bytes as they are sent
 inside of a UDP package within a `DNSResponse`.
 
 ### `mdns_client.struct.DNSQuestion` ###
-[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.structs-DNSQuestion-lightgrey)](src/mdns_client/structs.py#17)
+[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.structs-DNSQuestion-orange)](src/mdns_client/structs.py#17)
 
 The DNSQuestion represents a request being sent via MDNS to resolve a
 specific domain record of a specified type.
@@ -325,7 +325,7 @@ Returns a representation of the `DNSQuestion` in bytes as they are sent
 inside of a UDP package within a `DNSResponse`.
 
 ### `mdns_client.service_discovery.ServiceResponse` ###
-[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.service__discovery.service__response-ServiceResponse-lightgrey)](src/mdns_client/service_discovery/service_response.py#7)
+[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.service__discovery.service__response-ServiceResponse-orange)](src/mdns_client/service_discovery/service_response.py#7)
 
 
 The `ServiceResponse` includes information of a service which is available on the local network and has been discovered via the `ServiceDiscovery` class or one of its subclasses.
