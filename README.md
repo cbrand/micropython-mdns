@@ -2,10 +2,18 @@
 
 [![PyPi](https://img.shields.io/pypi/v/micropython-mdns) ![MIT licensed](https://img.shields.io/pypi/l/micropython-mdns)](https://pypi.org/project/micropython-mdns/)
 
-![Image showing service discovery](images/service-discovery.gif)
+![Image showing service discovery](https://raw.githubusercontent.com/cbrand/micropython-mdns/main/images/service-discovery.gif)
 
 A pure Python implementation of [MDNS](https://tools.ietf.org/html/rfc6762) and the [Service Discovery](https://tools.ietf.org/html/rfc6763) protocol over MDNS 
 for [MicroPython](https://micropython.org/).
+
+## Intended Audience ##
+
+You should not use this library if you "just" require MDNS A record lookup and Host annoucement if there is already baked in support in your MicroPython distribution.
+This is for example the case with the default ESP32 MicroPython distribution since v1.12. This will be in all cases more resource efficient.
+
+If you, however, require additional functionality like Service Discovery and Annoucement, you should use this library. It supports all functionality of existing
+basic MDNS implementations plus these features so you will not loose any functionality.
 
 ## Installation ##
 
@@ -27,7 +35,7 @@ having docker locally installed by running in the console the build command:
 make build
 ```
 
-Refer to the [`config`](config) directory to see the configuration files when baking this into your own MicroPython ESP32 build.
+Refer to the [`config`](https://github.com/cbrand/micropython-mdns/tree/main/config/boards) directory to see the configuration files when baking this into your own MicroPython ESP32 build.
 
 Other MicroPython implementations might not require any changes inside of the firmware.
 
@@ -49,4 +57,4 @@ A basic API reference for the public API is inside of the [REFERENCE.md](https:/
 
 ## License ##
 
-The library is published under the [MIT](LICENSE) license.
+The library is published under the [MIT](https://github.com/cbrand/micropython-mdns/blob/main/LICENSE) license.
