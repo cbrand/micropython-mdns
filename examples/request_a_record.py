@@ -10,6 +10,7 @@ import uasyncio
 from mdns_client import Client
 
 wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
 wlan.connect("<SSID>", "<Password>")
 while not wlan.isconnected():
     import time

@@ -15,6 +15,7 @@ from mdns_client.service_discovery import ServiceResponse
 from mdns_client.service_discovery.txt_discovery import TXTServiceDiscovery
 
 wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
 wlan.connect("<SSID>", "<Password>")
 while not wlan.isconnected():
     import time

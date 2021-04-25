@@ -14,6 +14,7 @@ from mdns_client import Client
 from mdns_client.responder import Responder
 
 wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
 wlan.connect("<SSID>", "<Password>")
 while not wlan.isconnected():
     import time
