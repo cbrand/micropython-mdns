@@ -7,25 +7,34 @@ erase:
 
 
 flash:
-	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 firmware.bin
+	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 firmware.bin
 
 copy-main:
 	./venv/bin/ampy -p /dev/ttyUSB0 put main.py /main.py
 
 copy: copy-main
 
-compile:
-	docker build -t esp32-mdns-client .
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+compile-micropython-1-13:
+	docker build -t esp32-mdns-client:micropython.1.13 -f Dockerfile.micropython.1.13 .
+	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.13 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.13.bin
+
+compile-micropython-1-15:
+	docker build -t esp32-mdns-client:micropython.1.15 -f Dockerfile.micropython.1.15 .
+	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.15.bin
+
+compile-newest: compile-micropython-1-15
+	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+
+compile: compile-micropython-1-13 compile-micropython-1-15
 
 install: erase compile flash copy-certs copy-main
 
 
-micropython-build-shell: compile
-	docker run --rm -i -t esp32-mdns-client bash
+micropython-build-shell: compile-micropython-1-15
+	docker run --rm -i -t esp32-mdns-client:micropython.1.15 bash
 
 
-compile-and-flash: compile flash
+compile-and-flash: compile-newest flash
 
 compile-and-shell: compile-and-flash shell
 
