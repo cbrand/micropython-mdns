@@ -124,7 +124,7 @@ loop = uasyncio.get_event_loop()
 wlan = network.WLAN(network.STA_IF)
 local_ip = wlan.ifconfig()[0]
 client = Client(local_ip)
-responder = Responder(client, own_ip=local_ip, host_name=lambda: "my-device-{}".format(responder.generate_random_postfix()))
+responder = Responder(client, own_ip=local_ip, host=lambda: "my-device-{}".format(responder.generate_random_postfix()))
 responder.advertise("_my_awesome_protocol", "_tcp", port=12345)
 ```
 
