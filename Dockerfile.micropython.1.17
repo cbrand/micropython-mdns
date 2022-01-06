@@ -1,4 +1,4 @@
-FROM --platform=linux/x86_64 python:3.9
+FROM --platform=linux/x86_64 python:3.10
 
 RUN apt-get update && \
     apt-get install -y git cmake wget make libncurses-dev flex bison gperf python libusb-1.0-0 libusb-1.0-0-dev
@@ -13,7 +13,7 @@ RUN git clone https://github.com/micropython/micropython && \
     bash /opt/app/esp-idf/install.sh && \
     bash -c "source export.sh" && \
     cd /opt/app/micropython && \
-    git checkout v1.15 && \
+    git checkout v1.17 && \
     git submodule update --init && \
     pip install -U pip && \
     pip install pyparsing==2.3.1 && \
