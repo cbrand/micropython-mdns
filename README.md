@@ -13,7 +13,7 @@ You should not use this library if you "just" require MDNS A record lookup and H
 This is for example the case with the default ESP32 MicroPython distribution since v1.12. This will be in all cases more resource efficient.
 
 If you, however, require additional functionality like Service Discovery and Annoucement, you should use this library. It supports all functionality of existing
-basic MDNS implementations plus these features so you will not loose any functionality.
+basic MDNS implementations plus these features. You will not loose any functionality.
 
 ## Installation
 
