@@ -16,22 +16,22 @@ copy: copy-main
 
 compile-micropython-1-13:
 	docker build -t esp32-mdns-client:micropython.1.13 -f Dockerfile.micropython.1.13 .
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.13 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.13.bin
+	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.13 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.13.bin
 
 compile-micropython-1-15:
 	docker build -t esp32-mdns-client:micropython.1.15 -f Dockerfile.micropython.1.15 .
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.15.bin
+	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.15.bin
 
 compile-micropython-1-16:
 	docker build -t esp32-mdns-client:micropython.1.16 -f Dockerfile.micropython.1.16 .
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.16 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.16.bin
+	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.16 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.16.bin
 
 compile-micropython-1-17:
 	docker build -t esp32-mdns-client:micropython.1.17 -f Dockerfile.micropython.1.17 .
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.17 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.17.bin
+	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.17 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.17.bin
 
 compile-newest: compile-micropython-1-17
-	docker run --rm -i -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.17 cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.17 cp build-MDNS/firmware.bin /opt/copy/firmware.bin
 
 compile: compile-micropython-1-13 compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17
 
@@ -39,7 +39,7 @@ install: erase compile flash copy-certs copy-main
 
 
 micropython-build-shell: compile-micropython-1-17
-	docker run --rm -i -t esp32-mdns-client:micropython.1.17 bash
+	docker run --rm -t esp32-mdns-client:micropython.1.17 bash
 
 
 compile-and-flash: compile-newest flash
@@ -59,4 +59,4 @@ upload:
 	twine upload src/dist/*.tar.gz
 
 generatecligif:
-	docker run --rm -i -t -u $$(id -u) -v $(CURDIR):/data asciinema/asciicast2gif -w 116 -h 20 images/service-discovery.rec images/service-discovery.gif
+	docker run --rm -t -u $$(id -u) -v $(CURDIR):/data asciinema/asciicast2gif -w 116 -h 20 images/service-discovery.rec images/service-discovery.gif
