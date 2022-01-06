@@ -9,7 +9,7 @@ import sdist_upip
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 6)
+REQUIRED_PYTHON = (3, 8)
 EGG_NAME = "micropython-mdns"
 
 
@@ -18,7 +18,7 @@ def list_packages(source_directory: str = ".") -> List[str]:
     return packages
 
 
-version = "1.0.1"
+__version__ = "1.0.1"
 requirements = []
 test_requirements = ["twine", "adafruit-ampy>=1.0.0"]
 
@@ -32,7 +32,7 @@ else:
 
 setup(
     name=EGG_NAME,
-    version=version,
+    version=__version__,
     python_requires=">={}.{}".format(*REQUIRED_PYTHON),
     url="https://github.com/cbrand/micropython-mdns",
     author="Christoph Brand",

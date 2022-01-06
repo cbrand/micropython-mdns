@@ -12,3 +12,7 @@ force_grid_wrap=0
 [tool.unimport]
 exclude='(__init__.py)|venv|env'
 remove="True"
+
+[tool.semantic_release]
+version_variable = 'src/setup.py:__version__'
+tag_format = '{version}'
