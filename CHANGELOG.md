@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.1 (2022-10-03)
+### Fix
+* Correct name length package generation ([`9a9ddae`](https://github.com/cbrand/micropython-mdns/commit/9a9ddae780d3b34f29e275e724442c95d769d575))
+
 ## v1.2.0 (2022-09-28)
 ### Feature
 * Add compile targets for new micropython ([`2b15d01`](https://github.com/cbrand/micropython-mdns/commit/2b15d0198562b2a28537ffb4c7cdd822385e16ea))
