@@ -1,4 +1,4 @@
-# API Reference #
+# API Reference
 
 The API consists of various classes. The main logic is automatically
 spinned up inside of a [`uasyncio` task](https://docs.micropython.org/en/latest/library/uasyncio.html#uasyncio.create_task)
@@ -7,7 +7,8 @@ which is started and stopped when required.
 The document doesn't outline all classes and functionality in the library.
 Instead, it outlines the API which can be seen as **stable** and intended for public use.
 
-## `mdns_client.Client` ##
+## `mdns_client.Client`
+
 [![Link to the mdns_client.Client code](https://img.shields.io/badge/mdns__client-Client-orange)](src/mdns_client/client.py#30)
 
 The client includes the basic logic for requesting and sending MDNS packages. It has a pluggable system to react on MDNS Record changes on the network.
@@ -32,12 +33,12 @@ print(loop.run_until_complete(client.getaddrinfo("the-other-device.local", 80)))
 ```python
 Client.__init__(local_addr: str, debug: bool = False)
 ```
+
 Initializes the client. It requires the local ip address for subscribing
 to multicast messages.
 
-If debug is enabled, the client will issue debug message via the 
+If debug is enabled, the client will issue debug message via the
 print() statement.
-
 
 ```python
 Client.add_callback(
@@ -46,6 +47,7 @@ Client.add_callback(
     timeout: "Optional[int]" = None
 ) -> Callback
 ```
+
 Registers a callback function which gets executed every time
 an MDNS message has been received and deserialized into a [DNSResponse](#DNSResponse) object.
 
@@ -67,16 +69,14 @@ Removes a registered callback with the given id.
 Returns True if the deletion was done and false, if no callback with the
 passed id has been found.
 
-
 ```python
 async Client.send_question(*questions: DNSQuestion) -> None
 async Client.send_response(response: DNSResponse) -> None
 ```
 
 Sends a DNS resolution question or response into the local network. This is mainly
-used by other parts of the library but is considered as public, if 
+used by other parts of the library but is considered as public, if
 an extension of the library is required.
-
 
 ```python
 async Client.getaddrinfo(
@@ -90,12 +90,11 @@ async Client.getaddrinfo(
 ```
 
 This implements the same interface as exists in the standard library
-on [socket objects for DNS resolution](https://docs.micropython.org/en/latest/library/usocket.html#usocket.getaddrinfo). 
-The function supports both  resolutions of local MDNS and normal 
-DNS queries. Addresses which are prefixed with `.local` are resolved 
-via MDNS, all others get sent to the configured `DNS` server via 
+on [socket objects for DNS resolution](https://docs.micropython.org/en/latest/library/usocket.html#usocket.getaddrinfo).
+The function supports both resolutions of local MDNS and normal
+DNS queries. Addresses which are prefixed with `.local` are resolved
+via MDNS, all others get sent to the configured `DNS` server via
 the [`socket.getaddrinfo`](https://docs.micropython.org/en/latest/library/usocket.html#usocket.getaddrinfo) function.
-
 
 ```python
 host_name = str
@@ -107,7 +106,8 @@ Resolves a pure MDNS A record requests. It returnes
 the record name as the first entry and the ipv4 address as the second
 tuple entry.
 
-## `mdns_client.responder.Responder` ##
+## `mdns_client.responder.Responder`
+
 [![Link to the mdns_client.responder.Responder code](https://img.shields.io/badge/mdns__client.responder-Responder-orange)](src/mdns_client/responer.py#29)
 
 This class is used for supporting service annoucements for own services
@@ -118,13 +118,14 @@ import uasyncio
 import network
 
 from mdns_client import Client
-from mdns_client.responder import Responder
+from mdns_client.responder import Responder, generate_random_postfix
 
 loop = uasyncio.get_event_loop()
 wlan = network.WLAN(network.STA_IF)
 local_ip = wlan.ifconfig()[0]
 client = Client(local_ip)
-responder = Responder(client, own_ip=local_ip, host=lambda: "my-device-{}".format(responder.generate_random_postfix()))
+postfix = generate_random_postfix()
+responder = Responder(client, own_ip=local_ip, host=lambda: "my-device-{}".format(postfix))
 responder.advertise("_my_awesome_protocol", "_tcp", port=12345)
 ```
 
@@ -164,7 +165,8 @@ Responder.withdraw(protocol: str, service: str) -> None
 
 Removes the service annoucement support of the passed `protocol`/`service` tuple.
 
-## `mdns_client.service_discovery.ServiceDiscovery` ##
+## `mdns_client.service_discovery.ServiceDiscovery`
+
 [![Link to the mdns_client.service_discovery.ServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery-ServiceDiscovery-orange)](src/mdns_client/service_discovery/discovery.py#24)
 [![Link to the mdns_client.service_discovery.txt_discovery.TxtServiceDiscovery code](https://img.shields.io/badge/mdns__client.service__discovery.txt__discovery-TXTServiceDiscovery-orange)](src/mdns_client/service_discovery/txt_discovery.py#15)
 
@@ -205,6 +207,7 @@ ServiceDiscovery.add_service_monitor(service_monitor: "ServiceMonitor") -> None
 Adds a specific service monitor to the discovery handler. Each time a service is updated, added or removed and marked as relevant it will be sent to the serivce monitor till it has been unregistered via `remove_service_monitor`.
 
 The `ServiceMonitor` must implement these functions:
+
 ```python
 class ServiceMonitor:
     def service_added(self, service: ServiceResponse) -> None:
@@ -221,7 +224,6 @@ ServiceDiscovery.remove_service_monitor(service_monitor: "ServiceMonitor") -> No
 
 Removes the specified service monitor from the discovery logic. If the service monitor hasn't been registered before, raises a `KeyError`.
 
-
 ```python
 async ServiceDiscovery.query(protocol: str, service: str) -> None
 ```
@@ -235,7 +237,7 @@ async ServiceDiscovery.query_once(protocol: str, service: str, timeout: float = 
 
 Asks the service discovery to resolve the `protocol`/`service` combination once. After the passed `timeout` (or a default one) has passed return all services which have been identified in between.
 
-If the `protocol`/`service` combination hasn't already been enqueued before (via a `query` call), it will afterwards remove the query request. Because of this behavior, the call is on the long run more memory efficient than constantly scanning the network for service records via the `query` function. 
+If the `protocol`/`service` combination hasn't already been enqueued before (via a `query` call), it will afterwards remove the query request. Because of this behavior, the call is on the long run more memory efficient than constantly scanning the network for service records via the `query` function.
 
 ```python
 ServiceDiscovery.current(protocol: str, service: str) -> "Iterable[ServiceResponse]"
@@ -243,9 +245,10 @@ ServiceDiscovery.current(protocol: str, service: str) -> "Iterable[ServiceRespon
 
 Returns the currently known services which provide the passed `protocol`/`service` on the network. It doesn't itself do any network calls and checks the state from the local cache. Thus, it should be used in combination with the `query` function.
 
-## Structs ##
+## Structs
 
-### `mdns_client.struct.DNSResponse` ###
+### `mdns_client.struct.DNSResponse`
+
 [![Link to the mdns_client.struct.DNSResponse code](https://img.shields.io/badge/mdns__client.structs-DNSResponse-orange)](src/mdns_client/structs.py#78)
 
 The DNSResponse is a namedtuple representing a received or to be sent MDNS-Response.
@@ -272,8 +275,8 @@ DNSResponse.to_bytes() -> bytes
 Returns a representation of the DNSResponse in bytes as they are sent
 inside of a UDP package.
 
+### `mdns_client.struct.DNSRecord`
 
-### `mdns_client.struct.DNSRecord` ###
 [![Link to the mdns_client.struct.DNSRecord code](https://img.shields.io/badge/mdns__client.structs-DNSRecord-orange)](src/mdns_client/structs.py#47)
 
 The DNSRecord namedtuple represents an individual record which has been
@@ -288,8 +291,8 @@ class DNSRecord:
     rdata: bytes
     invalid_at: int  # The time (in machine.ticks_ms) when the record is invalid
 ```
- 
- **Reference**
+
+**Reference**
 
 ```python
 DNSRecord.to_bytes() -> bytes
@@ -298,7 +301,8 @@ DNSRecord.to_bytes() -> bytes
 Returns a representation of the `DNSRecord` in bytes as they are sent
 inside of a UDP package within a `DNSResponse`.
 
-### `mdns_client.struct.DNSQuestion` ###
+### `mdns_client.struct.DNSQuestion`
+
 [![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.structs-DNSQuestion-orange)](src/mdns_client/structs.py#17)
 
 The DNSQuestion represents a request being sent via MDNS to resolve a
@@ -307,7 +311,7 @@ specific domain record of a specified type.
 ```python
 class DNSQuestion:
     query: str
-    type: int 
+    type: int
     query_class: int
 ```
 
@@ -324,9 +328,9 @@ DNSQuestion.to_bytes() -> bytes
 Returns a representation of the `DNSQuestion` in bytes as they are sent
 inside of a UDP package within a `DNSResponse`.
 
-### `mdns_client.service_discovery.ServiceResponse` ###
-[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.service__discovery.service__response-ServiceResponse-orange)](src/mdns_client/service_discovery/service_response.py#7)
+### `mdns_client.service_discovery.ServiceResponse`
 
+[![Link to the mdns_client.struct.DNSQuestion code](https://img.shields.io/badge/mdns__client.service__discovery.service__response-ServiceResponse-orange)](src/mdns_client/service_discovery/service_response.py#7)
 
 The `ServiceResponse` includes information of a service which is available on the local network and has been discovered via the `ServiceDiscovery` class or one of its subclasses.
 
@@ -338,9 +342,9 @@ class ServiceResponse:
     port: int
     ips: Set[str]
     txt_records: Optional[Dict[str, List[str]]]
-    
-    invalid_at: Optional[int]  
-    # time.ticks_ms when the service is no longer valid 
+
+    invalid_at: Optional[int]
+    # time.ticks_ms when the service is no longer valid
     # according to the passed time to live
 
     ttl: Optional[int]
