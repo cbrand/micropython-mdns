@@ -186,7 +186,7 @@ class Responder:
     def _ptr_record_for(self, query: str) -> DNSRecord:
         ptr_target = ".".join((self.host, query))
         # For some reason the PTR is shortened and the last two bytes are removed
-        ptr_target_bytes = name_to_bytes(ptr_target)[:-2] 
+        ptr_target_bytes = name_to_bytes(ptr_target)
         return DNSRecord(query, TYPE_PTR, CLASS_IN, DEFAULT_TTL, ptr_target_bytes)
 
     def _srv_record_for(self, query: str) -> "Optional[DNSRecord]":

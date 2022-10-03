@@ -57,11 +57,11 @@ class DNSRecord(namedtuple("DNSRecord", ["name", "record_type", "query_class", "
 
     def to_bytes(self) -> bytes:
         checked_name = self.checked_name
+        # Require a null bit in the end of the string
         query_len = string_packed_len(checked_name)
-        header_length = query_len + 8
+        header_length = query_len + 10
         rdata_length = len(self.rdata)
-        payload_length = 2 + rdata_length
-        buffer = bytearray(header_length + payload_length)
+        buffer = bytearray(header_length + rdata_length)
         pack_name(buffer, checked_name)
         index = query_len
         pack_into("!HHLH", buffer, index, self.record_type, self.query_class, self.time_to_live, rdata_length)

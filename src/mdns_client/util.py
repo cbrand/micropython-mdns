@@ -33,17 +33,17 @@ def check_name(n: str) -> "List[bytes]":
         n = n.split(".")
         if n[-1] == "":
             n = n[:-1]
-    n = [i.encode("UTF8") if isinstance(i, str) else i for i in n]
+    n = [i.encode("UTF-8") if isinstance(i, str) else i for i in n]
     return n
 
 
-def string_packed_len(string: "List[bytes]") -> int:
-    return sum(len(i) + 1 for i in string) + 1
+def string_packed_len(byte_list: "List[bytes]") -> int:
+    return sum(len(i) + 1 for i in byte_list) + 1
 
 
 def name_to_bytes(name: str) -> bytes:
     name_bytes = check_name(name)
-    buffer = bytearray(len(name_bytes) + len(name))
+    buffer = bytearray(string_packed_len(name_bytes))
     pack_name(buffer, name_bytes)
     return buffer
 
@@ -60,7 +60,7 @@ def pack_name(buffer: bytes, string: "List[bytes]") -> None:
         after_size_next_index = output_index + 1
         end_of_pack_name_index = after_size_next_index + part_length
         buffer[after_size_next_index:end_of_pack_name_index] = part
-        output_index += part_length + 1
+        output_index = end_of_pack_name_index
     buffer[output_index] = 0
 
 
