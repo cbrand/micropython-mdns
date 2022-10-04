@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.3 (2022-10-04)
+### Fix
+* Always return a txt dns record even if empty ([`e75757a`](https://github.com/cbrand/micropython-mdns/commit/e75757a024582221c66ac5f2832d040bfaa0dc4b))
+
 ## v1.2.2 (2022-10-04)
 ### Fix
 * Skip null txt record ([`40d09b7`](https://github.com/cbrand/micropython-mdns/commit/40d09b7ad1bb5e785b7c8be3f04ac923043545ca))

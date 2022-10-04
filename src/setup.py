@@ -18,7 +18,7 @@ def list_packages(source_directory: str = ".") -> List[str]:
     return packages
 
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 requirements = []
 test_requirements = ["twine", "adafruit-ampy>=1.0.0"]
 
