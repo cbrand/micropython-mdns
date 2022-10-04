@@ -209,9 +209,8 @@ class Responder:
         host = self.host
         if advertisment is None or host is None:
             return None
-        txt_data = advertisment.data
-        if txt_data is None or len(txt_data) == 0:
-            return None
+
+        txt_data = advertisment.data or {}
 
         fqdn_name = ".".join((host, service))
         txt_payload = txt_data_to_bytes(txt_data)
