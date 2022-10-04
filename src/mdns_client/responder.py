@@ -169,8 +169,12 @@ class Responder:
         if service is None:
             return
 
+        txt_record = self._txt_record_for(service)
+        if txt_record is None:
+            return
+
         self._dprint("Responding to DNS TXT question for {}".format(query))
-        srv_answers = [self._txt_record_for(service)]
+        srv_answers = [txt_record]
         self._send_response(srv_answers)
 
     def _get_service_of(self, query: str) -> "Optional[str]":
