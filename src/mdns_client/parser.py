@@ -1,9 +1,9 @@
 import struct
 from collections import namedtuple
 
-from .constants import REPEAT_TYPE_FLAG, TYPE_CNAME, TYPE_NS, TYPE_PTR, TYPE_SOA, TYPE_SRV
-from .structs import DNSQuestion, DNSRecord, DNSResponse
-from .util import end_index_of_name
+from mdns_client.constants import REPEAT_TYPE_FLAG, TYPE_CNAME, TYPE_NS, TYPE_PTR, TYPE_SOA, TYPE_SRV
+from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse
+from mdns_client.util import end_index_of_name
 
 MDNSPacketHeader = namedtuple(
     "MDNSPacketHeader",

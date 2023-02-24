@@ -4,14 +4,18 @@ repos:
     rev: 21.4b0
     hooks:
       - id: black
-        language_version: python3.8
+        language_version: python3.10
   - repo: https://github.com/hakancelikdev/unimport
     rev: "0.8.3"
     hooks:
       - id: unimport
         args: ["-r", "--exclude", "(__init__.py)|venv|env"]
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+    hooks:
+    - id: absolufy-imports
   - repo: https://gitlab.com/pycqa/flake8
-    rev: "3.9.1"
+    rev: "4.0.1"
     hooks:
       - id: flake8
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -20,8 +24,8 @@ repos:
       - id: check-toml
       - id: end-of-file-fixer
   - repo: https://github.com/PyCQA/isort
-    rev: "5.8.0"
+    rev: "5.12.0"
     hooks:
       - id: isort
-        language_version: python3.8
+        language_version: python3.10
         additional_dependencies: [toml]

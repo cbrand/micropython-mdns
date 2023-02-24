@@ -3,11 +3,11 @@ import time
 
 import uasyncio
 
-from ..client import Client
-from ..constants import CLASS_IN, TYPE_A, TYPE_PTR, TYPE_SRV
-from ..structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
-from ..util import a_record_rdata_to_string, bytes_to_name_list, name_list_to_name
-from .service_response import ServiceResponse
+from mdns_client.client import Client
+from mdns_client.constants import CLASS_IN, TYPE_A, TYPE_PTR, TYPE_SRV
+from mdns_client.service_discovery.service_response import ServiceResponse
+from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
+from mdns_client.util import a_record_rdata_to_string, bytes_to_name_list, name_list_to_name
 
 
 class ServiceChange:

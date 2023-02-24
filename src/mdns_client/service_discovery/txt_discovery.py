@@ -1,7 +1,7 @@
-from ..constants import TYPE_A, TYPE_PTR, TYPE_SRV, TYPE_TXT
-from ..structs import DNSRecord, DNSResponse
-from ..util import bytes_to_name_list
-from .discovery import ServiceDiscovery
+from mdns_client.constants import TYPE_A, TYPE_PTR, TYPE_SRV, TYPE_TXT
+from mdns_client.service_discovery.discovery import ServiceDiscovery
+from mdns_client.structs import DNSRecord, DNSResponse
+from mdns_client.util import bytes_to_name_list
 
 TYPE_KEYS = (TYPE_PTR, TYPE_SRV, TYPE_A, TYPE_TXT)
 

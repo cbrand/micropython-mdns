@@ -3,6 +3,7 @@ from collections import namedtuple
 
 import uasyncio
 
+from mdns_client.client import Client
 from mdns_client.constants import (
     CLASS_IN,
     DEFAULT_TTL,
@@ -13,10 +14,8 @@ from mdns_client.constants import (
     TYPE_SRV,
     TYPE_TXT,
 )
+from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
 from mdns_client.util import dotted_ip_to_bytes, name_to_bytes, txt_data_to_bytes
-
-from .client import Client
-from .structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
 
 Advertisement = namedtuple("Advertisement", ["port", "data"])
 MDNS_SERVICE_DISCOVERY = "_services._dns-sd._udp.local"

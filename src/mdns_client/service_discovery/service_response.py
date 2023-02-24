@@ -1,7 +1,7 @@
 import time
 
-from ..constants import CLASS_IN, TYPE_SRV
-from ..structs import DNSQuestion, SRVMixin
+from mdns_client.constants import CLASS_IN, TYPE_SRV
+from mdns_client.structs import DNSQuestion, SRVMixin
 
 
 class ServiceResponse(SRVMixin):

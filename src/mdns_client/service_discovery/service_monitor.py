@@ -1,4 +1,4 @@
-from .service_response import ServiceResponse
+from mdns_client.service_discovery.service_response import ServiceResponse
 
 
 class ServiceMonitor:
