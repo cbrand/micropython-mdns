@@ -17,7 +17,7 @@ from mdns_client.constants import (
 from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
 from mdns_client.util import dotted_ip_to_bytes, name_to_bytes, txt_data_to_bytes
 
-Advertisement = namedtuple("Advertisement", ["port", "data"])
+Advertisement = namedtuple("Advertisement", ["port", "data", "host"])
 MDNS_SERVICE_DISCOVERY = "_services._dns-sd._udp.local"
 
 
@@ -75,10 +75,15 @@ class Responder:
         return ".".join((host, "local"))
 
     def advertise(
-        self, protocol: str, service: str, port: int, data: "Optional[Dict[str, Union[List[str], str]]]" = None
+        self,
+        protocol: str,
+        service: str,
+        port: int,
+        data: "Optional[Dict[str, Union[List[str], str]]]" = None,
+        service_host_name: "Optional[str]" = None,
     ) -> None:
         service_protocol = ServiceProtocol(protocol, service)
-        self._advertisements[service_protocol.to_name()] = Advertisement(port, data)
+        self._advertisements[service_protocol.to_name()] = Advertisement(port, data, service_host_name)
         if self.stopped:
             self.start()
 
@@ -129,7 +134,10 @@ class Responder:
             return
 
         self._dprint("Responding to DNS PTR question for {}".format(query))
-        answers = [self._ptr_record_for(query)]
+        ptr_record = self._ptr_record_for(query)
+        if ptr_record is None:
+            return
+        answers = [ptr_record]
         additional = [self._srv_record_for(query), self._txt_record_for(query), self._a_record()]
         self._send_response(answers, additional)
 
@@ -178,16 +186,22 @@ class Responder:
 
     def _get_service_of(self, query: str) -> "Optional[str]":
         query_parts = query.split(".")
-        if len(query_parts) != 4 or query_parts[-1] != "local" or query_parts[0] != self.host:
+        if len(query_parts) != 4 or query_parts[-1] != "local":
             return
 
         service = ".".join(query_parts[-3:])
         if service not in self._advertisements:
-            return
+            return None
+        advertisment = self._advertisements[service]
+        if query_parts[0] not in (self.host, advertisment.host):
+            return None
+
         return service
 
-    def _ptr_record_for(self, query: str) -> DNSRecord:
-        ptr_target = ".".join((self.host, query))
+    def _ptr_record_for(self, query: str) -> "Optional[DNSRecord]":
+        ptr_target = self._service_name_of(query)
+        if ptr_target is None:
+            return None
         # For some reason the PTR is shortened and the last two bytes are removed
         ptr_target_bytes = name_to_bytes(ptr_target)
         return DNSRecord(query, TYPE_PTR, CLASS_IN, DEFAULT_TTL, ptr_target_bytes)
@@ -197,9 +211,9 @@ class Responder:
         host_fqdn = self.host_fqdn
         if advertisment is None or host_fqdn is None:
             return None
-        host = host_fqdn.split(".")[0]
+        srv_name = self._service_name_of(query)
+        assert srv_name is not None
 
-        srv_name = ".".join((host, query))
         srv_record = SRVRecord(srv_name, 0, 0, advertisment.port, host_fqdn)
         return DNSRecord(srv_name, TYPE_SRV, CLASS_IN, DEFAULT_TTL, srv_record.to_bytes())
 
@@ -211,10 +225,20 @@ class Responder:
 
         txt_data = advertisment.data or {}
 
-        fqdn_name = ".".join((host, service))
+        fqdn_name = self._service_name_of(service)
+        assert fqdn_name is not None
         txt_payload = txt_data_to_bytes(txt_data)
 
         return DNSRecord(fqdn_name, TYPE_TXT, CLASS_IN, DEFAULT_TTL, txt_payload)
+
+    def _service_name_of(self, service: str) -> "Optional[str]":
+        advertisment = self._advertisements.get(service, None)
+        host = self.host
+        if advertisment is None:
+            return None
+        host = advertisment.host or host
+        fqdn_name = ".".join((host, service))
+        return fqdn_name
 
     def _a_record(self) -> "Optional[DNSRecord]":
         host_fqdn = self.host_fqdn
