@@ -17,7 +17,7 @@ from mdns_client.constants import (
 from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
 from mdns_client.util import dotted_ip_to_bytes, name_to_bytes, txt_data_to_bytes
 
-Advertisement = namedtuple("Advertisement", ["port", "data"])
+Advertisement = namedtuple("Advertisement", ["port", "data", "host"])
 MDNS_SERVICE_DISCOVERY = "_services._dns-sd._udp.local"
 
 
@@ -75,10 +75,15 @@ class Responder:
         return ".".join((host, "local"))
 
     def advertise(
-        self, protocol: str, service: str, port: int, data: "Optional[Dict[str, Union[List[str], str]]]" = None
+        self,
+        protocol: str,
+        service: str,
+        port: int,
+        data: "Optional[Dict[str, Union[List[str], str]]]" = None,
+        host: "Optional[str]" = None,
     ) -> None:
         service_protocol = ServiceProtocol(protocol, service)
-        self._advertisements[service_protocol.to_name()] = Advertisement(port, data)
+        self._advertisements[service_protocol.to_name()] = Advertisement(port, data, host)
         if self.stopped:
             self.start()
 
@@ -178,12 +183,17 @@ class Responder:
 
     def _get_service_of(self, query: str) -> "Optional[str]":
         query_parts = query.split(".")
-        if len(query_parts) != 4 or query_parts[-1] != "local" or query_parts[0] != self.host:
+        if len(query_parts) != 4 or query_parts[-1] != "local":
             return
 
         service = ".".join(query_parts[-3:])
         if service not in self._advertisements:
-            return
+            return None
+        advertisment = self._advertisements[service]
+        host = advertisment.host or self.host
+        if query_parts[0] != host:
+            return None
+
         return service
 
     def _ptr_record_for(self, query: str) -> DNSRecord:
@@ -197,7 +207,7 @@ class Responder:
         host_fqdn = self.host_fqdn
         if advertisment is None or host_fqdn is None:
             return None
-        host = host_fqdn.split(".")[0]
+        host = advertisment.host or host_fqdn.split(".")[0]
 
         srv_name = ".".join((host, query))
         srv_record = SRVRecord(srv_name, 0, 0, advertisment.port, host_fqdn)
