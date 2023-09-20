@@ -16,10 +16,6 @@ copy-main:
 
 copy: copy-main
 
-compile-micropython-1-13:
-	docker build -t esp32-mdns-client:micropython.1.13 -f Dockerfile.micropython.1.13 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.13 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.13.bin
-
 compile-micropython-1-15:
 	docker build -t esp32-mdns-client:micropython.1.15 -f Dockerfile.micropython.1.15 .
 	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.15.bin
@@ -47,7 +43,7 @@ compile-micropython-1-20:
 compile-newest: compile-micropython-1-20
 	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.20 cp build-MDNS/firmware.bin /opt/copy/firmware.bin
 
-compile: compile-micropython-1-13 compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20
+compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20
 
 install: erase compile flash copy-certs copy-main
 
