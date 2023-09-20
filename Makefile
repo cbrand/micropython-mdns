@@ -1,16 +1,18 @@
 .DEFAULT_GOAL := build-compile
 
 build-compile: build compile
+TTY_PORT?=/dev/ttyUSB0
+
 
 erase:
-	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
+	esptool.py --chip esp32 --port ${TTY_PORT} erase_flash
 
 
 flash:
-	python3 ./venv/bin/esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 firmware.bin
+	esptool.py --chip esp32 --port ${TTY_PORT} write_flash -z 0x1000 firmware.bin
 
 copy-main:
-	./venv/bin/ampy -p /dev/ttyUSB0 put main.py /main.py
+	ampy -p ${TTY_PORT} put main.py /main.py
 
 copy: copy-main
 
@@ -59,7 +61,7 @@ compile-and-flash: compile-newest flash
 compile-and-shell: compile-and-flash shell
 
 shell:
-	picocom /dev/ttyUSB0 -b115200
+	picocom ${TTY_PORT} -b115200
 
 build-and-upload: build upload
 
