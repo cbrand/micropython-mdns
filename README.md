@@ -38,13 +38,13 @@ make build
 Individually it is also possible to build the desired version via:
 
 ```bash
-make compile-micropython-1-13
 make compile-micropython-1-14
 make compile-micropython-1-15
 make compile-micropython-1-16
 make compile-micropython-1-17
 make compile-micropython-1-18
 make compile-micropython-1-19
+make compile-micropython-1-20
 ```
 
 Refer to the [`config`](https://github.com/cbrand/micropython-mdns/tree/main/config/boards) directory to see the configuration files when baking this into your own MicroPython ESP32 build.
