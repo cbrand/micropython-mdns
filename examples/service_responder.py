@@ -34,6 +34,14 @@ responder = Responder(
 
 def announce_service():
     responder.advertise("_myawesomeservice", "_tcp", port=12345, data={"some": "metadata", "for": ["my", "service"]})
+    # If you want to set a dedicated service host name
+    responder.advertise(
+        "_myawesomeservice",
+        "_tcp",
+        port=12345,
+        data={"some": "metadata", "for": ["my", "service"]},
+        service_host_name="specialcontrollerservicename",
+    )
 
 
 announce_service()

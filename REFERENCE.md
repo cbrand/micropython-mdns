@@ -151,13 +151,19 @@ via the `print()` command.
 
 ```python
 Responder.advertise(
-    protocol: str, service: str, port: int, data: "Optional[Dict[str, Union[List[str], str]]]" = None
+    protocol: str,
+    service: str,
+    port: int,
+    data: "Optional[Dict[str, Union[List[str], str]]]" = None,
+    service_host_name: "Optional[str]" = None
 ) -> None
 ```
 
-Advertises the passed `protocol`/`service` to be available on specified port.
+Advertises the specified protocol/service to be available on the given port.
 
-Optionally, data can be passed which is published as a `TXT` record for further instructing third parties how to handle the service.
+Optionally, data can be passed, which is published as a `TXT` record to provide further instructions to third parties on how to handle the service. . If you want to update the `TXT` data, you can call the function again, which will overwrite the previous setting if you pass the same `protocol`/`service` combination to it.
+
+In very special cases, you might want to set your own service hostname different from the hostname in the A record of the controller. This is where `service_host_name` can be used to generate a dedicated hostname for the advertised service, such as `myservicehostname._myawesomeservice._tcp.local`.
 
 ```python
 Responder.withdraw(protocol: str, service: str) -> None
