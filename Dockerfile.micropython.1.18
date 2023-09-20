@@ -1,7 +1,7 @@
 FROM --platform=linux/x86_64 python:3.10
 
 RUN apt-get update && \
-    apt-get install -y git cmake wget make libncurses-dev flex bison gperf python libusb-1.0-0 libusb-1.0-0-dev
+    apt-get install -y git cmake wget make libncurses-dev flex bison gperf libusb-1.0-0 libusb-1.0-0-dev
 
 WORKDIR /opt/app
 

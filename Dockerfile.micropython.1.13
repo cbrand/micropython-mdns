@@ -1,7 +1,7 @@
 FROM --platform=linux/x86_64 python:3.8
 
 RUN apt-get update && \
-    apt-get install -y git cmake wget make libncurses-dev flex bison gperf python build-essential
+    apt-get install -y git cmake wget make libncurses-dev flex bison gperf build-essential
 
 WORKDIR /opt/app
 
