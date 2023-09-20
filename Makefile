@@ -2,11 +2,12 @@
 
 build-compile: build compile
 TTY_PORT?=/dev/ttyUSB0
-
+PWD?=$(shell pwd)
+DNS_VOLUME_NAME?=mdns-build-volume
+NEWEST_MICROPYTHON_VERSION?=1.20
 
 erase:
 	esptool.py --chip esp32 --port ${TTY_PORT} erase_flash
-
 
 flash:
 	esptool.py --chip esp32 --port ${TTY_PORT} write_flash -z 0x1000 firmware.bin
@@ -16,32 +17,33 @@ copy-main:
 
 copy: copy-main
 
-compile-micropython-1-15:
-	docker build -t esp32-mdns-client:micropython.1.15 -f Dockerfile.micropython.1.15 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.15 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.15.bin
+create-data-volume:
+	docker volume create ${DNS_VOLUME_NAME}
 
-compile-micropython-1-16:
-	docker build -t esp32-mdns-client:micropython.1.16 -f Dockerfile.micropython.1.16 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.16 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.16.bin
+compile-micropython-1-15: create-data-volume
+	MICROPYTHON_VERSION=1.15 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
 
-compile-micropython-1-17:
-	docker build -t esp32-mdns-client:micropython.1.17 -f Dockerfile.micropython.1.17 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.17 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.17.bin
+compile-micropython-1-16: create-data-volume
+	MICROPYTHON_VERSION=1.16 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+	
 
-compile-micropython-1-18:
-	docker build -t esp32-mdns-client:micropython.1.18 -f Dockerfile.micropython.1.18 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.18 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.18.bin
+compile-micropython-1-17: create-data-volume
+	MICROPYTHON_VERSION=1.17 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
 
-compile-micropython-1-19:
-	docker build -t esp32-mdns-client:micropython.1.19 -f Dockerfile.micropython.1.19 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.19 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.19.bin
+compile-micropython-1-18: create-data-volume
+	MICROPYTHON_VERSION=1.18 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
 
-compile-micropython-1-20:
-	docker build -t esp32-mdns-client:micropython.1.20 -f Dockerfile.micropython.1.20 .
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.20 cp build-MDNS/firmware.bin /opt/copy/firmware.mp.1.20.bin
+compile-micropython-1-19: create-data-volume
+	MICROPYTHON_VERSION=1.19 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+
+compile-micropython-1-20: create-data-volume
+	MICROPYTHON_VERSION=1.20 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
 
 compile-newest: compile-micropython-1-20
-	docker run --rm -v "$$(pwd):/opt/copy" -t esp32-mdns-client:micropython.1.20 cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+	docker run --rm -v "${DNS_VOLUME_NAME}:/opt/copy" -t esp32-mdns-client:micropython.${NEWEST_MICROPYTHON_VERSION} cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+	docker create -v ${DNS_VOLUME_NAME}:/data --name helper busybox true
+	docker cp helper:/data/firmware.bin ./firmware.bin
+	docker rm helper
 
 compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20
 
