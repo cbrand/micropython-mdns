@@ -24,6 +24,13 @@ import upip
 upip.install("micropython-mdns")
 ```
 
+Alternatively you can also use the new [`mip`](https://docs.micropython.org/en/latest/reference/packages.html#installing-packages-with-mip) package manager:
+
+```python
+import mip
+mip.install("github:cbrand/micropython-mdns")
+```
+
 For using this library, native C type implementations of MDNS which use the MDNS service port need to be disabled. For example, this project has been developed
 on the ESP32 which MicroPython implementation per default has a basic MDNS implementation available. This does only support local A record lookups and A record
 responding of its own host address.

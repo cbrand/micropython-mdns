@@ -63,7 +63,10 @@ shell:
 
 build-and-upload: build upload
 
-build:
+mip-json:
+	python generate-package-json.py
+
+build: mip-json
 	rm -rf src/dist/*.tar.gz*
 	cd src && python setup.py sdist
 
