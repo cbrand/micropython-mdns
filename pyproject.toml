@@ -14,9 +14,9 @@ exclude='(__init__.py)|venv|env'
 remove="True"
 
 [tool.semantic_release]
-version_variable = 'src/setup.py:__version__'
+version_variables = ['src/setup.py:__version__']
 tag_format = '{version}'
-commit_parser = "semantic_release.history.angular_parser"
+commit_parser = "angular"
 changelog_file = "CHANGELOG.md"
 branch = "main"
 build_command = "make compile build"
