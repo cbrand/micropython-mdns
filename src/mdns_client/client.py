@@ -56,7 +56,6 @@ class Client:
         self.callbacks[callback_config.id] = callback_config
         if self.stopped:
             self.dprint("Added consumer on stopped mdns client. Starting it now.")
-            self.stopped = False
             loop = uasyncio.get_event_loop()
             loop.create_task(self.start())
         return callback_config
@@ -72,9 +71,9 @@ class Client:
         return sock
 
     async def start(self) -> None:
-        self.stopped = False
-        self._init_socket()
-        await self.consume()
+        if self.stopped:
+            self.stopped = False
+            await self.consume()
 
     def _init_socket(self) -> None:
         self._close_socket()
@@ -92,6 +91,8 @@ class Client:
         self.socket = None
 
     async def consume(self) -> None:
+        self.dprint("Starting mdns client consume loop.")
+        self._init_socket()
         while not self.stopped:
             await self.process_waiting_data()
             await uasyncio.sleep_ms(100)
