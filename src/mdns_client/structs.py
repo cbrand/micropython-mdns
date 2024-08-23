@@ -135,7 +135,7 @@ class ServiceProtocol(namedtuple("ServiceProtocol", ["protocol", "service"])):
         return "local"
 
     def to_name(self) -> str:
-        return "{}.{}.{}".format(self.protocol, self.service, self.domain)
+        return "{}.{}.{}".format(self.protocol, self.service, self.domain).lower()
 
 
 ServiceResponse = namedtuple("ServiceResponse", ["priority", "weight", "port", "target"])
@@ -155,7 +155,7 @@ class SRVRecord(namedtuple("SRVRecord", ["name", "priority", "weight", "port", "
     def from_dns_record(cls, dns_record: DNSRecord) -> "SRVRecord":
         name = dns_record.name
         priority, weight, port = unpack_from("!HHH", dns_record.rdata, 0)
-        target = bytes_to_name(dns_record.rdata[6:])
+        target = bytes_to_name(dns_record.rdata[6:]).lower()
         return SRVRecord(name, priority, weight, port, target)
 
     def to_bytes(self) -> bytes:

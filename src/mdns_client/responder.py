@@ -72,7 +72,7 @@ class Responder:
         if host is None:
             return None
 
-        return ".".join((host, "local"))
+        return ".".join((host, "local")).lower()
 
     def advertise(
         self,
@@ -238,7 +238,7 @@ class Responder:
             return None
         host = advertisment.host or host
         fqdn_name = ".".join((host, service))
-        return fqdn_name
+        return fqdn_name.lower()
 
     def _a_record(self) -> "Optional[DNSRecord]":
         host_fqdn = self.host_fqdn

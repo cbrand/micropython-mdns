@@ -41,7 +41,7 @@ class PacketParser:
         return [self.parse_question() for _ in range(self.header.num_questions)]
 
     def parse_question(self) -> DNSQuestion:
-        record_name = self._parse_record_name()
+        record_name = self._parse_record_name().lower()
         type_query, query_class = self._unpack("!HH", 4)
         return DNSQuestion(record_name, type_query, query_class)
 

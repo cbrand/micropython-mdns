@@ -198,6 +198,7 @@ class Client:
             return socket.getaddrinfo(host, port, family, type, proto, flags)
 
     async def mdns_getaddr(self, host: str) -> Tuple[str, str]:
+        host = host.lower()
         self.dprint("Resolving mdns request host {}".format(host))
         response = self.scan_for_response(TYPE_A, host, self.mdns_timeout)
         await self.send_question(DNSQuestion(host, TYPE_A, CLASS_IN))

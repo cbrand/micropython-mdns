@@ -203,11 +203,11 @@ class ServiceDiscovery:
             self._enqueue_srv_for(name_list_to_name(pointer_data))
 
     def _enqueue_srv_for(self, srv_name: str) -> None:
-        self._enqueued_service_records.add(srv_name)
+        self._enqueued_service_records.add(srv_name.lower())
 
     def _on_srv_record(self, record: DNSRecord) -> None:
         if record.name in self._enqueued_service_records:
-            self._enqueued_service_records.remove(record.name)
+            self._enqueued_service_records.remove(record.name.lower())
 
         srv_name_items = record.name.split(".")
         if len(srv_name_items) < 4:
@@ -246,7 +246,7 @@ class ServiceDiscovery:
 
     def _on_a_record(self, record: DNSRecord) -> None:
         if record.name in self._enqueued_target_records:
-            self._enqueued_target_records.remove(record.name)
+            self._enqueued_target_records.remove(record.name.lower())
 
         if record.name not in self._records_by_target:
             return
