@@ -2,6 +2,104 @@
 
 
 
+## v1.5.0 (2024-10-15)
+
+### Chore
+
+* chore(pre-commit-config): update pre commit versions ([`f3fae99`](https://github.com/cbrand/micropython-mdns/commit/f3fae99dd6e8aea9393c28d1940ca9f943b2ccd3))
+
+* chore(README): add tips how to build RPI Pico with the library ([`ca5a95a`](https://github.com/cbrand/micropython-mdns/commit/ca5a95ac6f890b078ae9731ab1f5ac4e54367457))
+
+### Feature
+
+* feat(boards): add compile support for raspberry pi micro
+
+Add support for RPI builds and support for Micropython 1.21, 1.22 and 1.23 for esp32.
+
+Fixes #15 ([`86670ac`](https://github.com/cbrand/micropython-mdns/commit/86670ac4041329a668b6cc63e7b3399339fa0977))
+
+### Fix
+
+* fix(record): lowercase all mdns records
+
+Following advice from https://github.com/cbrand/micropython-mdns/issues/24 make sure that only lowercase configurations are resolved making the library case insensitive. ([`f557fa0`](https://github.com/cbrand/micropython-mdns/commit/f557fa05d7d3226931222c2d7ddf2adb21780d78))
+
+* fix: requirements.txt to reduce vulnerabilities
+
+
+The following vulnerabilities are fixed by pinning transitive dependencies:
+- https://snyk.io/vuln/SNYK-PYTHON-ZIPP-7430899 ([`1e3d040`](https://github.com/cbrand/micropython-mdns/commit/1e3d040c2a89220e97a2ce2949d8073d2aeaa236))
+
+* fix: requirements.txt to reduce vulnerabilities
+
+
+The following vulnerabilities are fixed by pinning transitive dependencies:
+- https://snyk.io/vuln/SNYK-PYTHON-URLLIB3-7267250 ([`56bbed8`](https://github.com/cbrand/micropython-mdns/commit/56bbed8532a68da66f7a4df731156d5be1282691))
+
+* fix: requirements.txt to reduce vulnerabilities
+
+
+The following vulnerabilities are fixed by pinning transitive dependencies:
+- https://snyk.io/vuln/SNYK-PYTHON-URLLIB3-7267250 ([`e8d5e59`](https://github.com/cbrand/micropython-mdns/commit/e8d5e59539cf0720429a2fbd1cff3890857e2b13))
+
+* fix: requirements.txt to reduce vulnerabilities
+
+
+The following vulnerabilities are fixed by pinning transitive dependencies:
+- https://snyk.io/vuln/SNYK-PYTHON-REQUESTS-6928867 ([`f4f3f29`](https://github.com/cbrand/micropython-mdns/commit/f4f3f2973c6804511289c1e2682650ad95e02add))
+
+* fix: requirements.txt to reduce vulnerabilities
+
+
+The following vulnerabilities are fixed by pinning transitive dependencies:
+- https://snyk.io/vuln/SNYK-PYTHON-CERTIFI-3164749
+- https://snyk.io/vuln/SNYK-PYTHON-CERTIFI-5805047
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3172287
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3314966
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315324
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315328
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315331
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315452
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315972
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3315975
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3316038
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-3316211
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5663682
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5777683
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5813745
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5813746
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5813750
+- https://snyk.io/vuln/SNYK-PYTHON-CRYPTOGRAPHY-5914629
+- https://snyk.io/vuln/SNYK-PYTHON-PYGMENTS-1086606
+- https://snyk.io/vuln/SNYK-PYTHON-PYGMENTS-1088505
+- https://snyk.io/vuln/SNYK-PYTHON-PYGMENTS-5750273
+- https://snyk.io/vuln/SNYK-PYTHON-REQUESTS-5595532
+- https://snyk.io/vuln/SNYK-PYTHON-SETUPTOOLS-3180412
+- https://snyk.io/vuln/SNYK-PYTHON-WHEEL-3180413 ([`8e53ff8`](https://github.com/cbrand/micropython-mdns/commit/8e53ff828fef564ca1ecf2d0e38026033b08b0be))
+
+### Unknown
+
+* Merge pull request #20 from cbrand/snyk-fix-c864f9ede7c3cb1285cdcffa04300a91
+
+[Snyk] Security upgrade zipp from 3.15.0 to 3.19.1 ([`22fc426`](https://github.com/cbrand/micropython-mdns/commit/22fc426c7752c22114f8e3aa268f080245deae81))
+
+* Merge pull request #19 from cbrand/snyk-fix-04152d14a55fb78486714d72a4e45d1b
+
+[Snyk] Security upgrade urllib3 from 2.0.7 to 2.2.2 ([`9bd4d75`](https://github.com/cbrand/micropython-mdns/commit/9bd4d75c4b2613c801a347c730b7c72eac64b3d5))
+
+* Merge pull request #18 from cbrand/snyk-fix-e4c95849946480482bb5309de9885477
+
+[Snyk] Security upgrade urllib3 from 2.0.7 to 2.2.2 ([`cc5b20d`](https://github.com/cbrand/micropython-mdns/commit/cc5b20d8635baad6feb7d2b198a7c57bbec4c086))
+
+* Merge pull request #17 from cbrand/snyk-fix-2aa89ccd85b84e2ba5c7fba41b579086
+
+[Snyk] Security upgrade requests from 2.31.0 to 2.32.0 ([`6dd7334`](https://github.com/cbrand/micropython-mdns/commit/6dd73348371215222f9b2cbc48340fed552f6411))
+
+* Merge pull request #14 from cbrand/snyk-fix-8408080548f89d86210ea656f1fdd070
+
+[Snyk] Fix for 24 vulnerabilities ([`eba8c10`](https://github.com/cbrand/micropython-mdns/commit/eba8c10c97b2a294bf2b3de326eab0a6b65d2e05))
+
+
 ## v1.4.0 (2023-09-21)
 
 ### Chore

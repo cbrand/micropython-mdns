@@ -19,6 +19,6 @@ tag_format = '{version}'
 commit_parser = "angular"
 changelog_file = "CHANGELOG.md"
 branch = "main"
-build_command = "make compile build"
+build_command = "make compile build upload"
 dist_path = "src/dist/"
 upload_to_repository = false

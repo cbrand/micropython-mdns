@@ -45,7 +45,6 @@ make build
 Individually it is also possible to build the desired version via:
 
 ```bash
-make compile-micropython-1-14
 make compile-micropython-1-15
 make compile-micropython-1-16
 make compile-micropython-1-17
@@ -77,7 +76,7 @@ A basic API reference for the public API is inside of the [REFERENCE.md](https:/
 
 - Depending on your MicroPython implementation, you must disable MDNS in the firmware.
   - For ESP32 use the Dockerfile for the specific Micropython version in the root directory.
-  - For RPI Pico Micropython beginning with version 1.32 is supported since version 1.5.0.
+  - For RPI Pico Micropython beginning with version 1.32 is supported since version 1.5.0 where you can see how to do it in the Dockerfile in the root directory.
 - Currently no support for IPv6 is implemented.
 - Depending how chatty the network is, service responders and discovery might require a lot of memory. If the memory is filled by the buffer of the underlying socket, [the socket is closed and reopened](https://github.com/cbrand/micropython-mdns/blob/d3dd54f809629ca41c525f5dec86963a6d75e903/src/mdns_client/client.py#L100) which looses data. It, however, seems to work fine enough in tests on an ESP32 without external memory. Depending on the project size, a module with external RAM might be advisable.
 
