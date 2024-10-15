@@ -35,8 +35,8 @@ For using this library, native C type implementations of MDNS which use the MDNS
 on the ESP32 which MicroPython implementation per default has a basic MDNS implementation available. This does only support local A record lookups and A record
 responding of its own host address.
 
-The [releases page](https://github.com/cbrand/micropython-mdns/releases) on this project publishes a firmware.mp.1.13.bin which is MicroPython 1.13 with MDNS disabled as well as a firmware.mp.1.15.bin for MicroPython 1.15 in each release for easy usage. Both can also be built when
-having docker locally installed by running in the console the build command:
+The [releases page](https://github.com/cbrand/micropython-mdns/releases) on this project publishes a firmware.mp.1.23.esp32.bin for MicroPython 1.23 with MDNS disabled and the mdns python module included in each release for easy usage. Other Micropython versions are also supported. Other boards are supported and you are welcome to add additional Dockerfiles in a PR which build the module compatible for other boards.
+All versions can also be built when having docker locally installed by running in the console the build command:
 
 ```bash
 make build
@@ -52,9 +52,14 @@ make compile-micropython-1-17
 make compile-micropython-1-18
 make compile-micropython-1-19
 make compile-micropython-1-20
+make compile-micropython-1-21
+make compile-micropython-1-22
+make compile-micropython-1-23
 ```
 
 Refer to the [`config`](https://github.com/cbrand/micropython-mdns/tree/main/config/boards) directory to see the configuration files when baking this into your own MicroPython ESP32 build.
+
+For Raspberry Pi Pico support see the corresponding Dockerfile on how to compile it in linux [`Dockerfile.micropython.1.23.rp2`](https://github.com/cbrand/micropython-mdns/tree/main/Dockerfile.micropython.1.23.rp2).
 
 Other MicroPython implementations might not require any changes inside of the firmware.
 
@@ -72,7 +77,7 @@ A basic API reference for the public API is inside of the [REFERENCE.md](https:/
 
 - Depending on your MicroPython implementation, you must disable MDNS in the firmware.
   - For ESP32 use the Dockerfile for the specific Micropython version in the root directory.
-  - For RPI Pico instructions see the instructions [in this issue](https://github.com/cbrand/micropython-mdns/issues/9#issuecomment-1925869228).
+  - For RPI Pico Micropython beginning with version 1.32 is supported since version 1.5.0.
 - Currently no support for IPv6 is implemented.
 - Depending how chatty the network is, service responders and discovery might require a lot of memory. If the memory is filled by the buffer of the underlying socket, [the socket is closed and reopened](https://github.com/cbrand/micropython-mdns/blob/d3dd54f809629ca41c525f5dec86963a6d75e903/src/mdns_client/client.py#L100) which looses data. It, however, seems to work fine enough in tests on an ESP32 without external memory. Depending on the project size, a module with external RAM might be advisable.
 

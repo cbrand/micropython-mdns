@@ -4,7 +4,7 @@ build-compile: build compile
 TTY_PORT?=/dev/ttyUSB0
 PWD?=$(shell pwd)
 DNS_VOLUME_NAME?=mdns-build-volume
-NEWEST_MICROPYTHON_VERSION?=1.20
+NEWEST_MICROPYTHON_VERSION?=1.23
 
 erase:
 	esptool.py --chip esp32 --port ${TTY_PORT} erase_flash
@@ -39,19 +39,29 @@ compile-micropython-1-19: create-data-volume
 compile-micropython-1-20: create-data-volume
 	MICROPYTHON_VERSION=1.20 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
 
-compile-newest: compile-micropython-1-20
-	docker run --rm -v "${DNS_VOLUME_NAME}:/opt/copy" -t esp32-mdns-client:micropython.${NEWEST_MICROPYTHON_VERSION} cp build-MDNS/firmware.bin /opt/copy/firmware.bin
+compile-micropython-1-21: create-data-volume
+	MICROPYTHON_VERSION=1.21 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+
+compile-micropython-1-22: create-data-volume
+	MICROPYTHON_VERSION=1.22 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+
+compile-micropython-1-23: create-data-volume
+	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
+
+compile-newest: compile-micropython-1-23
+	docker run --rm -v "${DNS_VOLUME_NAME}:/opt/copy" -t esp32-mdns-client:micropython.${NEWEST_MICROPYTHON_VERSION} cp build-MDNS/firmware.bin /opt/copy/firmware.esp32.bin
 	docker create -v ${DNS_VOLUME_NAME}:/data --name helper busybox true
 	docker cp helper:/data/firmware.bin ./firmware.bin
 	docker rm helper
 
-compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20
+compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20 compile-micropython-1-21 compile-micropython-1-22 compile-micropython-1-23
 
 install: erase compile flash copy-certs copy-main
 
 
-micropython-build-shell: compile-micropython-1-20
-	docker run --rm -t esp32-mdns-client:micropython.1.20 bash
+micropython-build-shell: compile-micropython-1-23
+	docker run --rm -t esp32-mdns-client:micropython.1.23.esp32 bash
 
 
 compile-and-flash: compile-newest flash
