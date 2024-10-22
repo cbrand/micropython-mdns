@@ -1,0 +1,40 @@
+FROM --platform=linux/x86_64 python:3.11
+
+RUN apt-get update && \
+    apt-get install -y git cmake wget make libncurses-dev flex bison gperf libusb-1.0-0 libusb-1.0-0-dev gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential libstdc++-arm-none-eabi-newlib
+
+WORKDIR /opt/app
+
+ENV PATH=${PATH}:/root/.local/bin
+
+RUN git clone https://github.com/micropython/micropython && \
+    cd /opt/app/micropython && \
+    git checkout v1.22.2 && \
+    git submodule update --init && \
+    pip install -U pip && \
+    pip install pyparsing==2.3.1 && \
+    pip install esptool==3.0 && \
+    pip install pyserial==3.5 && \
+    pip install 'click>=7.0' \
+    'future>=0.15.2' \
+    'pyelftools>=0.22' \
+    'idf-component-manager~=1.2' \
+    'urllib3<2' \
+    'pygdbmi<=0.9.0.2' \
+    'kconfiglib==13.7.1' \
+    'bitstring>=3.1.6,<4' \
+    'construct==2.10.54'
+
+WORKDIR /opt/app/micropython
+
+RUN sed -E 's/define LWIP_MDNS_RESPONDER([ ]+)1/define LWIP_MDNS_RESPONDER$\10/g' ports/rp2/lwip_inc/lwipopts.h
+
+ENV BOARD RPI_PICO_W
+
+RUN make -C mpy-cross
+
+WORKDIR /opt/app/micropython/ports/rp2
+
+ADD src/mdns_client modules/mdns_client
+
+RUN bash -c "make submodules && make"

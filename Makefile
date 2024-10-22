@@ -44,6 +44,7 @@ compile-micropython-1-21: create-data-volume
 
 compile-micropython-1-22: create-data-volume
 	MICROPYTHON_VERSION=1.22 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+	MICROPYTHON_VERSION=1.22 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
 
 compile-micropython-1-23: create-data-volume
 	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
