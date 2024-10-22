@@ -10,7 +10,7 @@ ENV PATH=${PATH}:/root/.local/bin
 RUN git clone https://github.com/micropython/micropython && \
     git clone -b v5.0.2 --recursive https://github.com/espressif/esp-idf.git && \
     cd /opt/app/micropython && \
-    git checkout v1.23.0 && \
+    git checkout v1.21.0 && \
     git submodule update --init && \
     pip install -U pip && \
     pip install pyparsing==2.3.1 && \
