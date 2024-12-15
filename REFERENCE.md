@@ -240,7 +240,6 @@ resolving the services which are currently available on the connected network.
 ```python
 async ServiceDiscovery.query_once(protocol: str, service: str, timeout: float = None) -> "Iterable[ServiceResponse]"
 ```
-***Note:** Despite the call being named `query_once()`, it starts asyncio tasks which keep running -- and querying -- after the call returned. To actually stop respective background tasks, `client.stop()` needs to be called.*
 
 Asks the service discovery to resolve the `protocol`/`service` combination once. After the passed `timeout` (or a default one) has passed return all services which have been identified in between.
 
