@@ -74,4 +74,6 @@ class ServiceResponse(SRVMixin):
 
     async def refresh_with(self, client: "Client") -> None:
         self.refreshed_at = time.ticks_ms()
+        if client.stopped:
+            return
         await client.send_question(DNSQuestion(self.name, TYPE_SRV, CLASS_IN))

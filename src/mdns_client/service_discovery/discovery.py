@@ -58,12 +58,15 @@ class ServiceDiscovery:
         self.callback_id = callback.id
 
     async def _change_loop(self) -> None:
-        while self.started:
+        while self.started and not self.client.stopped:
             await self._tick()
             await uasyncio.sleep(self.timeout)
 
     async def _tick(self) -> None:
         now = time.ticks_ms()
+        if self.client.stopped:
+            return
+
         for services in self.monitored_services.values():
             to_remove = set()
             for service in services.values():
