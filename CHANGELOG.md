@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v1.5.2 (2024-12-15)
+
+### Bug Fixes
+
+- **service_discovery**: A record detection for certain devices
+  ([`078f3df`](https://github.com/cbrand/micropython-mdns/commit/078f3df5cb44b4438049a26431ae09aea48b7624))
+
+Ensure that the A record for certain devices (for example shellies) is done correctly by buffering
+  currently irrelevant A records as they get sent before the SRV record for the specific target is
+  sent.
+
+This change slightly increases memory overhead as an additional configurable buffer needs to be
+  added to allow buffering A records which are not yet relevant for an SRV response.
+
+- **service_discovery**: Adjust discover_once to shut down resources
+  ([`2331707`](https://github.com/cbrand/micropython-mdns/commit/233170773933aa2de63b10cedbe3daf9392dff15))
+
+If the discover_once method is called and the underyling client and / or discovery has not been
+  started by another component ensure to shut down the complete library afterwards to not consume
+  any resources without a developer explicitly asking for other functionality in the MDNS library.
+
+### Chores
+
+- Update Makefile
+  ([`1503bfa`](https://github.com/cbrand/micropython-mdns/commit/1503bfa0cfed6203b41594c931ca0c0411957790))
+
+fix various configs in the Makefile and add Micropython 1.24 (hacked) support.
+
+
 ## v1.5.1 (2024-12-15)
 
 ### Bug Fixes
