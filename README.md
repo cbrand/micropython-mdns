@@ -54,6 +54,7 @@ make compile-micropython-1-20
 make compile-micropython-1-21
 make compile-micropython-1-22
 make compile-micropython-1-23
+make compile-micropython-1-24
 ```
 
 Refer to the [`config`](https://github.com/cbrand/micropython-mdns/tree/main/config/boards) directory to see the configuration files when baking this into your own MicroPython ESP32 build.

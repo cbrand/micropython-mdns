@@ -58,13 +58,22 @@ compile-micropython-esp32-1-23: create-data-volume
 compile-micropython-rp2-1-23:
 	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
 
+compile-micropython-1-24: compile-micropython-esp32-1-24 compile-micropython-rp2-1-24
+
+compile-micropython-esp32-1-24: create-data-volume
+	MICROPYTHON_VERSION=1.24 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+
+compile-micropython-rp2-1-24:
+	MICROPYTHON_VERSION=1.24 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
+
+
 compile-newest: compile-micropython-1-23
 	docker run --rm -v "${DNS_VOLUME_NAME}:/opt/copy" -t esp32-mdns-client:micropython.${NEWEST_MICROPYTHON_VERSION} cp build-MDNS/firmware.bin /opt/copy/firmware.esp32.bin
 	docker create -v ${DNS_VOLUME_NAME}:/data --name helper busybox true
 	docker cp helper:/data/firmware.bin ./firmware.bin
 	docker rm helper
 
-compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20 compile-micropython-1-21 compile-micropython-1-22 compile-micropython-1-23
+compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20 compile-micropython-1-21 compile-micropython-1-22 compile-micropython-1-23 compile-micropython-1-24
 
 install: erase compile flash copy-certs copy-main
 
