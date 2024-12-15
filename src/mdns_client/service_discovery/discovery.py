@@ -124,6 +124,14 @@ class ServiceDiscovery:
             return
 
         self.client.remove_id(self.callback_id)
+        self.monitored_services.clear()
+        self._records_by_target.clear()
+        self._a_records_by_target_buffer.clear()
+        self._service_monitors.clear()
+        self._enqueued_service_records.clear()
+        self._enqueued_target_records.clear()
+        self._current_change = ServiceChange()
+        self.started = False
 
     async def query(self, protocol: str, service: str) -> None:
         self.start_if_necessary()
@@ -141,6 +149,8 @@ class ServiceDiscovery:
 
     async def query_once(self, protocol: str, service: str, timeout: float = None) -> "Iterable[ServiceResponse]":
         timeout = self.timeout if timeout is None else timeout
+        started_before = self.started
+        client_started_before = not self.client.stopped
         self.start_if_necessary()
         service_protocol = ServiceProtocol(protocol, service)
         existed = service_protocol in self.monitored_services
@@ -152,6 +162,11 @@ class ServiceDiscovery:
         if not existed:
             self._remove_from_monitor(service_protocol)
 
+        if not started_before:
+            self.stop()
+
+        if not client_started_before:
+            self.client.stop()
         return result
 
     def _register_monitored_service(self, service_protocol: ServiceProtocol) -> dict:

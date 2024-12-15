@@ -75,8 +75,7 @@ class Client:
         await self.consume()
 
     def _init_socket(self) -> None:
-        if self.socket is not None:
-            self.socket.close()
+        self._close_socket()
         self.socket = self._make_socket()
         self.socket.bind(("", MDNS_PORT))
 
