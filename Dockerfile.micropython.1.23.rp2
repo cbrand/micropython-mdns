@@ -40,4 +40,6 @@ WORKDIR /opt/app/micropython/ports/rp2
 
 ADD src/mdns_client modules/mdns_client
 
-RUN bash -c "make clean && make submodules && make -j16"
+ENTRYPOINT [ "bash" ]
+
+CMD [ "-c", "make submodules && make -j16" ]

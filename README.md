@@ -59,7 +59,19 @@ make compile-micropython-1-24
 
 Refer to the [`config`](https://github.com/cbrand/micropython-mdns/tree/main/config/boards) directory to see the configuration files when baking this into your own MicroPython ESP32 build.
 
-For Raspberry Pi Pico support see the corresponding Dockerfile on how to compile it in linux [`Dockerfile.micropython.1.23.rp2`](https://github.com/cbrand/micropython-mdns/tree/main/Dockerfile.micropython.1.23.rp2).
+### Raspberry Pi Pico
+
+For Raspberry Pi Pico support see the corresponding Dockerfile on how to compile it in linux [`Dockerfile.micropython.1.23.rp2`](https://github.com/cbrand/micropython-mdns/tree/main/Dockerfile.micropython.1.23.rp2). The following command will build a docker container that can be used to create a new micropython firmware with the in-built mDNS disabled:
+
+    dockerbuild -f Dockerfile.micropython.<version>.rp2 -t micropython-nodns:<version> .
+
+and the following command will perform the compilation and provide the resulting firmware as "build\firmware.uf2":
+
+    docker run -v .\build:/opt/app/micropython/ports/rp2/build-RPI_PICO_W micropython-nodns:<version>
+
+(The directory "build" should not exist when this is run or there could be conflict with authorization for the docker daemon; if the docker daemon is free to create the directory, this will work better. Change <version> the version of Micropython you wish to build, and adjust the path separator in ".\build" for your system.)
+
+### Other Implementations
 
 Other MicroPython implementations might not require any changes inside of the firmware.
 
