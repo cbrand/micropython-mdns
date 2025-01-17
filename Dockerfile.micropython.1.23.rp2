@@ -28,7 +28,7 @@ RUN git clone https://github.com/micropython/micropython && \
 
 WORKDIR /opt/app/micropython
 
-RUN sed -E 's/define LWIP_MDNS_RESPONDER([ ]+)1/define LWIP_MDNS_RESPONDER$\10/g' ports/rp2/lwip_inc/lwipopts.h
+RUN sed -i -E 's/define LWIP_MDNS_RESPONDER([ ]+)1/define LWIP_MDNS_RESPONDER\10/g' ports/rp2/lwip_inc/lwipopts.h
 
 ENV BOARD=RPI_PICO_W
 
