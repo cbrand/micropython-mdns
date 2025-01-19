@@ -43,7 +43,7 @@ WORKDIR /opt/app/micropython/ports/esp32
 
 # WARNING: This is a special fix for ESP32 and only Micropython 1.24.0 - 1.24.1 as disabling MDNS otherwise fails on the builds
 # See: https://github.com/micropython/micropython/pull/16349 for details
-RUN git checkout b20687d0e71360bf76eccedbb9d2c1f73697693a
+RUN git cherry-pick b20687d0e71360bf76eccedbb9d2c1f73697693a
 
 RUN bash -c "source ${IDF_PATH}/export.sh && make submodules && make"
 

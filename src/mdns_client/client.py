@@ -62,11 +62,13 @@ class Client:
         return callback_config
 
     def _make_socket(self) -> socket.socket:
+        self.dprint("Creating socket for address %s" % (self.local_addr))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         member_info = dotted_ip_to_bytes(MDNS_ADDR) + dotted_ip_to_bytes(self.local_addr)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, member_info)
         sock.setblocking(False)
+        self.dprint("Socket creation finished")
         return sock
 
     async def start(self) -> None:
@@ -77,7 +79,8 @@ class Client:
     def _init_socket(self) -> None:
         self._close_socket()
         self.socket = self._make_socket()
-        self.socket.bind(("", MDNS_PORT))
+        self.socket.bind((MDNS_ADDR, MDNS_PORT))
+        self.dprint("Bind finished ready to use MDNS query data")
 
     def stop(self) -> None:
         self.stopped = True

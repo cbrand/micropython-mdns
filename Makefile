@@ -18,45 +18,7 @@ copy-main:
 copy: copy-main
 
 create-data-volume:
-	docker volume create ${DNS_VOLUME_NAME}
-
-compile-micropython-1-15: create-data-volume
-	MICROPYTHON_VERSION=1.15 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-16: create-data-volume
-	MICROPYTHON_VERSION=1.16 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-	
-
-compile-micropython-1-17: create-data-volume
-	MICROPYTHON_VERSION=1.17 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-18: create-data-volume
-	MICROPYTHON_VERSION=1.18 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-19: create-data-volume
-	MICROPYTHON_VERSION=1.19 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-20: create-data-volume
-	MICROPYTHON_VERSION=1.20 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-21: create-data-volume
-	MICROPYTHON_VERSION=1.21 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-1-22: compile-micropython-esp32-1-22 compile-micropython-rp2-1-22
-
-compile-micropython-esp32-1-22: create-data-volume
-	MICROPYTHON_VERSION=1.22 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-rp2-1-22: create-data-volume
-	MICROPYTHON_VERSION=1.22 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
-
-compile-micropython-1-23: compile-micropython-esp32-1-23 compile-micropython-rp2-1-23
-
-compile-micropython-esp32-1-23: create-data-volume
-	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
-
-compile-micropython-rp2-1-23:
-	MICROPYTHON_VERSION=1.23 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
+	docker volume create ${DNS_VOLUME_NAME} || true
 
 compile-micropython-1-24: compile-micropython-esp32-1-24 compile-micropython-rp2-1-24
 
@@ -73,7 +35,7 @@ compile-newest: compile-micropython-esp32-1-24
 	docker cp helper:/data/firmware.mp.${NEWEST_MICROPYTHON_VERSION}.esp32.bin ./firmware.bin
 	docker rm helper
 
-compile: compile-micropython-1-15 compile-micropython-1-16 compile-micropython-1-17 compile-micropython-1-18 compile-micropython-1-19 compile-micropython-1-20 compile-micropython-1-21 compile-micropython-1-22 compile-micropython-1-23 compile-micropython-1-24
+compile: compile-micropython-1-24
 
 install: erase compile-newest flash copy-main
 
