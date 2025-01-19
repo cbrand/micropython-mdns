@@ -17,14 +17,7 @@ basic MDNS implementations plus these features. You will not loose any functiona
 
 ## Installation
 
-The library is available on PyPi and can be installed via upip.
-
-```python
-import upip
-upip.install("micropython-mdns")
-```
-
-Alternatively you can also use the new [`mip`](https://docs.micropython.org/en/latest/reference/packages.html#installing-packages-with-mip) package manager:
+You can use the new [`mip`](https://docs.micropython.org/en/latest/reference/packages.html#installing-packages-with-mip) package manager:
 
 ```python
 import mip
