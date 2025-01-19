@@ -1,5 +1,11 @@
 FROM --platform=linux/x86_64 python:3.11
 
+ARG ESP_IDF_VERSION=v5.2.2
+ARG MICROPYTHON_VERSION=v1.24.1
+ARG MICROPYTHON_FILE_PATH=1.24
+
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
+
 RUN apt-get update && \
     apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0 quilt
 
@@ -8,9 +14,9 @@ WORKDIR /opt/app
 ENV PATH=${PATH}:/root/.local/bin
 
 RUN git clone https://github.com/micropython/micropython && \
-    git clone -b v5.2.2 --recursive https://github.com/espressif/esp-idf.git && \
+    git clone -b ${ESP_IDF_VERSION} --recursive https://github.com/espressif/esp-idf.git && \
     cd /opt/app/micropython && \
-    git checkout v1.24.1 && \
+    git checkout ${MICROPYTHON_VERSION} && \
     git submodule update --init && \
     pip install -U pip && \
     pip install pyparsing==2.3.1 && \
@@ -24,7 +30,8 @@ RUN git clone https://github.com/micropython/micropython && \
     'pygdbmi<=0.9.0.2' \
     'kconfiglib==13.7.1' \
     'bitstring>=3.1.6,<4' \
-    'construct==2.10.54'
+    'construct==2.10.54' && \
+    mkdir -p /tmp/mdns-build
 
 ENV ESPIDF "/opt/app/esp-idf"
 ENV IDF_PATH "/opt/app/esp-idf"
@@ -43,10 +50,12 @@ WORKDIR /opt/app/micropython/ports/esp32
 
 # WARNING: This is a special fix for ESP32 and only Micropython 1.24.0 - 1.24.1 as disabling MDNS otherwise fails on the builds
 # See: https://github.com/micropython/micropython/pull/16349 for details
-RUN git cherry-pick b20687d0e71360bf76eccedbb9d2c1f73697693a
+RUN git checkout b20687d0e71360bf76eccedbb9d2c1f73697693a
 
 RUN bash -c "source ${IDF_PATH}/export.sh && make submodules && make"
 
 ADD src/mdns_client modules/mdns_client
 
-RUN bash -c "source ${IDF_PATH}/export.sh && make"
+ENTRYPOINT [ "bash" ]
+
+CMD ["-c", "source ${IDF_PATH}/export.sh && make && cp build-MDNS/firmware.bin /tmp/mdns-build/firmware.mp.${MICROPYTHON_FILE_PATH}.esp32.bin"]

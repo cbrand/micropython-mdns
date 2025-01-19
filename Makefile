@@ -22,16 +22,14 @@ create-data-volume:
 
 compile-micropython-1-24: compile-micropython-esp32-1-24 compile-micropython-rp2-1-24
 
-compile-micropython-esp32-1-24: create-data-volume
-	MICROPYTHON_VERSION=1.24 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} ./build-and-copy-firmware.sh
+compile-micropython-esp32-1-24:
+	MICROPYTHON_VERSION=1.24 MICROPYTHON_PORT=esp32 ./build-and-copy-firmware.sh
 
 compile-micropython-rp2-1-24:
-	MICROPYTHON_VERSION=1.24 DNS_VOLUME_NAME=${DNS_VOLUME_NAME} MICROPYTHON_PORT=rp2 MICROPYTHON_EXTENSION=uf2 BOARD=RPI_PICO_W ./build-and-copy-firmware.sh
+	MICROPYTHON_VERSION=1.24 MICROPYTHON_PORT=rp2 ./build-and-copy-firmware.sh
 
 
 compile-newest: compile-micropython-esp32-1-24
-	docker run --rm -v "${DNS_VOLUME_NAME}:/opt/copy" -t esp32-mdns-client:micropython.${NEWEST_MICROPYTHON_VERSION}.esp32 cp build-MDNS/firmware.bin /opt/copy/firmware.esp32.bin
-	docker create -v ${DNS_VOLUME_NAME}:/data --name helper busybox true
 	docker cp helper:/data/firmware.mp.${NEWEST_MICROPYTHON_VERSION}.esp32.bin ./firmware.bin
 	docker rm helper
 

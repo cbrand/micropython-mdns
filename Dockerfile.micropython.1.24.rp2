@@ -1,5 +1,9 @@
 FROM --platform=linux/x86_64 python:3.11
 
+ARG MICROPYTHON_VERSION=v1.24.1
+ARG MICROPYTHON_FILE_PATH=1.24
+ARG BOARD=RPI_PICO_W
+
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y cmake build-essential libffi-dev git pkg-config gcc-arm-none-eabi -y
@@ -10,7 +14,7 @@ ENV PATH=${PATH}:/root/.local/bin
 
 RUN git clone https://github.com/micropython/micropython && \
     cd /opt/app/micropython && \
-    git checkout v1.24.1 && \
+    git checkout ${MICROPYTHON_VERSION} && \
     git submodule update --init && \
     pip install -U pip && \
     pip install pyparsing==2.3.1 && \
@@ -24,13 +28,15 @@ RUN git clone https://github.com/micropython/micropython && \
     'pygdbmi<=0.9.0.2' \
     'kconfiglib==13.7.1' \
     'bitstring>=3.1.6,<4' \
-    'construct==2.10.54'
+    'construct==2.10.54' && \
+    mkdir -p /tmp/mdns-build
 
 WORKDIR /opt/app/micropython
 
 RUN sed -i -E 's/define LWIP_MDNS_RESPONDER([ ]+)1/define LWIP_MDNS_RESPONDER\10/g' ports/rp2/lwip_inc/lwipopts.h
 
-ENV BOARD=RPI_PICO_W
+ENV BOARD=${BOARD}
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
 
 RUN make -C mpy-cross
 
@@ -40,4 +46,8 @@ WORKDIR /opt/app/micropython/ports/rp2
 
 ADD src/mdns_client modules/mdns_client
 
-RUN bash -c "make clean && make submodules && make -j16"
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
+
+ENTRYPOINT [ "bash" ]
+
+CMD ["-c", "make clean && make submodules && make -j16 && cp build-${BOARD}/firmware.uf2 /tmp/mdns-build/firmware.mp.${MICROPYTHON_FILE_PATH}.rp2.uf2"]
