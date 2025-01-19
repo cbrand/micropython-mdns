@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v1.6.0 (2025-01-19)
+
+### Version removal
+
+- Remove supported and build Micropython versions and only support 1.24 to avoid needing to build compatibility hacks for previous versions.
+
+### Bug fixes
+
+- Fix builds for RP2 in Dockerfile.
+  ([`26629f`](https://github.com/cbrand/micropython-mdns/commit/26629f326665a45835d5a59f796d4b3382b89e94))
+
+Updated the sed command by @joncard1 in https://github.com/cbrand/micropython-mdns/pull/30
+
+- Fix MDNS run in Micropython 1.24 on RP2
+  ([`6d09fb`](https://github.com/cbrand/micropython-mdns/commit/6d09fbacc50b75e31773378f2ec098351b3bfc99)) 
 
 ## v1.5.2 (2024-12-15)
 
