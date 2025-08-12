@@ -32,6 +32,7 @@ class ServiceDiscovery:
         debug: bool = False,
         a_records_buffer_size: int = 10,
         a_records_buffer_timeout_ms: int = 500,
+        dns_sd_discovery: bool = False,
     ) -> None:
         self.client = client
         self.monitored_services = {}
@@ -45,6 +46,7 @@ class ServiceDiscovery:
         self._enqueued_target_records = set()
         self._service_monitors = set()
         self._current_change = ServiceChange()
+        self._dns_sd_discovery = dns_sd_discovery
         self.timeout = 2.0
         self.debug = debug
 
@@ -201,7 +203,12 @@ class ServiceDiscovery:
                 del self._records_by_target[target]
 
     async def _request_once(self, service_protocol: ServiceProtocol) -> None:
+        if self._dns_sd_discovery:
+            await self._run_service_discovery_request()
         await self.client.send_question(DNSQuestion(service_protocol.to_name(), TYPE_PTR, CLASS_IN))
+
+    async def _run_service_discovery_request(self) -> None:
+        await self.client.send_question(DNSQuestion("_services._dns_sd._udp.local", TYPE_PTR, CLASS_IN))
 
     async def _on_response(self, response: DNSResponse) -> None:
         for message in self._records_of(response):
