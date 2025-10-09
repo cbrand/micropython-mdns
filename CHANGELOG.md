@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## v.1.7.0 (2025-10-09)
+## v1.7.1 (2025-10-09)
+
+### Version fix
+
+- Fix an issue in v1.7.0 where the version number was not set up correctly.
+
+## v1.7.0 (2025-10-09)
 
 ### Micropython support
 
