@@ -1,4 +1,4 @@
-FROM --platform=linux/x86_64 python:3.11
+FROM --platform=linux/x86_64 python:3.12
 
 ARG ESP_IDF_VERSION=v5.4.2
 ARG MICROPYTHON_VERSION=v1.26.0
