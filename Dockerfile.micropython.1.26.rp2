@@ -1,6 +1,6 @@
-FROM --platform=linux/x86_64 python:3.11
+FROM --platform=linux/x86_64 python:3.12
 
-ARG MICROPYTHON_VERSION=v1.26.0
+ARG MICROPYTHON_VERSION=v1.26.1
 ARG MICROPYTHON_FILE_PATH=1.26
 ARG BOARD=RPI_PICO_W
 
@@ -28,7 +28,7 @@ RUN git clone https://github.com/micropython/micropython && \
     'pygdbmi<=0.9.0.2' \
     'kconfiglib==13.7.1' \
     'bitstring>=3.1.6,<4' \
-    'construct==2.10.54' && \
+    'construct>=2.10.54,<3' && \
     mkdir -p /tmp/mdns-build
 
 WORKDIR /opt/app/micropython
