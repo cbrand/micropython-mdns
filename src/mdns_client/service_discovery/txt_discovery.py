@@ -22,10 +22,11 @@ class TXTServiceDiscovery(ServiceDiscovery):
         return sorted(super()._records_of(response), key=sort_record_by_type)
 
     def _on_txt_record(self, record: DNSRecord) -> None:
-        if record.name not in self._records_by_target:
+        record_name = record.name.lower()
+        if record_name not in self._records_by_target:
             return
 
-        target = self._records_by_target[record.name]
+        target = self._records_by_target[record_name]
         txt_records = bytes_to_name_list(record.rdata)
         txt_entries = {}
         for txt_record in txt_records:

@@ -62,11 +62,13 @@ class Client:
         return callback_config
 
     def _make_socket(self) -> socket.socket:
+        self.dprint("Creating socket for address %s" % (self.local_addr))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         member_info = dotted_ip_to_bytes(MDNS_ADDR) + dotted_ip_to_bytes(self.local_addr)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, member_info)
         sock.setblocking(False)
+        self.dprint("Socket creation finished")
         return sock
 
     async def start(self) -> None:
@@ -75,10 +77,10 @@ class Client:
         await self.consume()
 
     def _init_socket(self) -> None:
-        if self.socket is not None:
-            self.socket.close()
+        self._close_socket()
         self.socket = self._make_socket()
-        self.socket.bind(("", MDNS_PORT))
+        self.socket.bind((MDNS_ADDR, MDNS_PORT))
+        self.dprint("Bind finished ready to use MDNS query data")
 
     def stop(self) -> None:
         self.stopped = True
@@ -198,6 +200,7 @@ class Client:
             return socket.getaddrinfo(host, port, family, type, proto, flags)
 
     async def mdns_getaddr(self, host: str) -> Tuple[str, str]:
+        host = host.lower()
         self.dprint("Resolving mdns request host {}".format(host))
         response = self.scan_for_response(TYPE_A, host, self.mdns_timeout)
         await self.send_question(DNSQuestion(host, TYPE_A, CLASS_IN))

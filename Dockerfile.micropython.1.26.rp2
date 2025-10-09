@@ -1,0 +1,53 @@
+FROM --platform=linux/x86_64 python:3.12
+
+ARG MICROPYTHON_VERSION=v1.26.1
+ARG MICROPYTHON_FILE_PATH=1.26
+ARG BOARD=RPI_PICO_W
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y cmake build-essential libffi-dev git pkg-config gcc-arm-none-eabi -y
+
+WORKDIR /opt/app
+
+ENV PATH=${PATH}:/root/.local/bin
+
+RUN git clone https://github.com/micropython/micropython && \
+    cd /opt/app/micropython && \
+    git checkout ${MICROPYTHON_VERSION} && \
+    git submodule update --init && \
+    pip install -U pip && \
+    pip install pyparsing==2.3.1 && \
+    pip install esptool==3.0 && \
+    pip install pyserial==3.5 && \
+    pip install 'click>=7.0' \
+    'future>=0.15.2' \
+    'pyelftools>=0.22' \
+    'idf-component-manager~=1.2' \
+    'urllib3<2' \
+    'pygdbmi<=0.9.0.2' \
+    'kconfiglib==13.7.1' \
+    'bitstring>=3.1.6,<4' \
+    'construct>=2.10.54,<3' && \
+    mkdir -p /tmp/mdns-build
+
+WORKDIR /opt/app/micropython
+
+RUN sed -i -E 's/define LWIP_MDNS_RESPONDER([ ]+)1/define LWIP_MDNS_RESPONDER\10/g' ports/rp2/lwip_inc/lwipopts.h
+
+ENV BOARD=${BOARD}
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
+
+RUN make -C mpy-cross
+
+RUN git submodule update --init -- lib/pico-sdk lib/tinyusb
+
+WORKDIR /opt/app/micropython/ports/rp2
+
+ADD src/mdns_client modules/mdns_client
+
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
+
+ENTRYPOINT [ "bash" ]
+
+CMD ["-c", "make clean && make submodules && make -j16 && cp build-${BOARD}/firmware.uf2 /tmp/mdns-build/firmware.mp.${MICROPYTHON_FILE_PATH}.rp2.uf2"]

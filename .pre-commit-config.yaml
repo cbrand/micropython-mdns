@@ -1,12 +1,12 @@
 exclude: "test.*py"
 repos:
   - repo: https://github.com/ambv/black
-    rev: 21.4b0
+    rev: 24.10.0
     hooks:
       - id: black
         language_version: python3.10
   - repo: https://github.com/hakancelikdev/unimport
-    rev: "0.8.3"
+    rev: "1.2.1"
     hooks:
       - id: unimport
         args: ["-r", "--exclude", "(__init__.py)|venv|env"]
@@ -14,17 +14,17 @@ repos:
     rev: v0.3.1
     hooks:
     - id: absolufy-imports
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: "4.0.1"
+  - repo: https://github.com/pycqa/flake8
+    rev: "7.1.1"
     hooks:
       - id: flake8
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v5.0.0
     hooks:
       - id: check-toml
       - id: end-of-file-fixer
   - repo: https://github.com/PyCQA/isort
-    rev: "5.12.0"
+    rev: "5.13.2"
     hooks:
       - id: isort
         language_version: python3.10

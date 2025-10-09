@@ -4,12 +4,10 @@ from typing import List
 
 from setuptools import find_namespace_packages, setup
 
-import sdist_upip
-
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 8)
+REQUIRED_PYTHON = (3, 11)
 EGG_NAME = "micropython-mdns"
 
 
@@ -18,7 +16,7 @@ def list_packages(source_directory: str = ".") -> List[str]:
     return packages
 
 
-__version__ = "1.4.0"
+__version__ = "1.6.0"
 requirements = []
 test_requirements = ["twine", "adafruit-ampy>=1.0.0"]
 
@@ -51,12 +49,9 @@ setup(
         "Programming Language :: Python :: Implementation :: MicroPython",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: System :: Networking",
@@ -64,5 +59,4 @@ setup(
     ],
     extras_require={},
     project_urls={"GitHub": "https://github.com/cbrand/micropython-mdns"},
-    cmdclass={"sdist": sdist_upip.sdist},
 )

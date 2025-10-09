@@ -1,19 +1,22 @@
-FROM --platform=linux/x86_64 python:3.11
+FROM --platform=linux/x86_64 python:3.12
+
+ARG ESP_IDF_VERSION=v5.2.2
+ARG MICROPYTHON_VERSION=v1.25.0
+ARG MICROPYTHON_FILE_PATH=1.25
+
+ENV MICROPYTHON_FILE_PATH=${MICROPYTHON_FILE_PATH}
 
 RUN apt-get update && \
-    apt-get install -y git cmake wget make libncurses-dev flex bison gperf libusb-1.0-0 libusb-1.0-0-dev
+    apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0 quilt
 
 WORKDIR /opt/app
 
 ENV PATH=${PATH}:/root/.local/bin
 
 RUN git clone https://github.com/micropython/micropython && \
-    git clone -b v4.4.5 --recursive https://github.com/espressif/esp-idf.git && \
-    cd esp-idf && \
-    bash /opt/app/esp-idf/install.sh && \
-    bash -c "source export.sh" && \
+    git clone -b ${ESP_IDF_VERSION} --recursive https://github.com/espressif/esp-idf.git && \
     cd /opt/app/micropython && \
-    git checkout v1.20.0 && \
+    git checkout ${MICROPYTHON_VERSION} && \
     git submodule update --init && \
     pip install -U pip && \
     pip install pyparsing==2.3.1 && \
@@ -27,16 +30,17 @@ RUN git clone https://github.com/micropython/micropython && \
     'pygdbmi<=0.9.0.2' \
     'kconfiglib==13.7.1' \
     'bitstring>=3.1.6,<4' \
-    'construct==2.10.54'
+    'construct==2.10.54' && \
+    mkdir -p /tmp/mdns-build
 
 ENV ESPIDF "/opt/app/esp-idf"
 ENV IDF_PATH "/opt/app/esp-idf"
 ENV BOARD "MDNS"
 
-RUN python "${IDF_PATH}/tools/idf_tools.py" export && \
-    python "${IDF_PATH}/tools/check_python_dependencies.py"
+WORKDIR ${ESPIDF}
+RUN ./install.sh esp32
 
-ADD config/boards/ /opt/app/micropython/ports/esp32/boards/
+ADD config/boards-after-micropython-1-20/ /opt/app/micropython/ports/esp32/boards/
 
 WORKDIR /opt/app/micropython
 
@@ -46,10 +50,8 @@ WORKDIR /opt/app/micropython/ports/esp32
 
 RUN bash -c "source ${IDF_PATH}/export.sh && make submodules && make"
 
-WORKDIR /opt/app/
-
-WORKDIR /opt/app/micropython/ports/esp32
-
 ADD src/mdns_client modules/mdns_client
 
-RUN bash -c "source ${IDF_PATH}/export.sh && make"
+ENTRYPOINT [ "bash" ]
+
+CMD ["-c", "source ${IDF_PATH}/export.sh && make && cp build-MDNS/firmware.bin /tmp/mdns-build/firmware.mp.${MICROPYTHON_FILE_PATH}.esp32.bin"]

@@ -1,3 +1,4 @@
+from collections import namedtuple
 import gc
 import time
 
@@ -8,6 +9,9 @@ from mdns_client.constants import CLASS_IN, TYPE_A, TYPE_PTR, TYPE_SRV
 from mdns_client.service_discovery.service_response import ServiceResponse
 from mdns_client.structs import DNSQuestion, DNSRecord, DNSResponse, ServiceProtocol, SRVRecord
 from mdns_client.util import a_record_rdata_to_string, bytes_to_name_list, name_list_to_name
+
+
+record_buffer = namedtuple("RecordBuffer", ["record", "invalid_at"])
 
 
 class ServiceChange:
@@ -22,15 +26,27 @@ class ServiceChange:
 
 
 class ServiceDiscovery:
-    def __init__(self, client: Client, debug: bool = False) -> None:
+    def __init__(
+        self,
+        client: Client,
+        debug: bool = False,
+        a_records_buffer_size: int = 10,
+        a_records_buffer_timeout_ms: int = 500,
+        dns_sd_discovery: bool = False,
+    ) -> None:
         self.client = client
         self.monitored_services = {}
         self.started = False
         self._records_by_target = {}
+        self._a_records_by_target_buffer = set()
+        self._a_records_buffer_size = a_records_buffer_size
+        self._a_records_buffer_timeout_ms = a_records_buffer_timeout_ms
+
         self._enqueued_service_records = set()
         self._enqueued_target_records = set()
         self._service_monitors = set()
         self._current_change = ServiceChange()
+        self._dns_sd_discovery = dns_sd_discovery
         self.timeout = 2.0
         self.debug = debug
 
@@ -58,12 +74,15 @@ class ServiceDiscovery:
         self.callback_id = callback.id
 
     async def _change_loop(self) -> None:
-        while self.started:
+        while self.started and not self.client.stopped:
             await self._tick()
             await uasyncio.sleep(self.timeout)
 
     async def _tick(self) -> None:
         now = time.ticks_ms()
+        if self.client.stopped:
+            return
+
         for services in self.monitored_services.values():
             to_remove = set()
             for service in services.values():
@@ -90,6 +109,7 @@ class ServiceDiscovery:
             self._propagate_current_change()
             self._current_change = ServiceChange()
 
+        self._clean_up_buffer()
         gc.collect()
 
     def _propagate_current_change(self):
@@ -106,6 +126,14 @@ class ServiceDiscovery:
             return
 
         self.client.remove_id(self.callback_id)
+        self.monitored_services.clear()
+        self._records_by_target.clear()
+        self._a_records_by_target_buffer.clear()
+        self._service_monitors.clear()
+        self._enqueued_service_records.clear()
+        self._enqueued_target_records.clear()
+        self._current_change = ServiceChange()
+        self.started = False
 
     async def query(self, protocol: str, service: str) -> None:
         self.start_if_necessary()
@@ -123,6 +151,8 @@ class ServiceDiscovery:
 
     async def query_once(self, protocol: str, service: str, timeout: float = None) -> "Iterable[ServiceResponse]":
         timeout = self.timeout if timeout is None else timeout
+        started_before = self.started
+        client_started_before = not self.client.stopped
         self.start_if_necessary()
         service_protocol = ServiceProtocol(protocol, service)
         existed = service_protocol in self.monitored_services
@@ -133,6 +163,12 @@ class ServiceDiscovery:
         result = tuple(monitored_services)
         if not existed:
             self._remove_from_monitor(service_protocol)
+
+        if not started_before:
+            self.stop()
+
+        if not client_started_before:
+            self.client.stop()
         return result
 
     def _register_monitored_service(self, service_protocol: ServiceProtocol) -> dict:
@@ -158,6 +194,7 @@ class ServiceDiscovery:
             del service_dict[service]
 
     def _remove_item_from_target(self, target: str, service: ServiceResponse) -> None:
+        target = target.lower()
         res = self._records_by_target.get(target, None)
         if res:
             if service in res:
@@ -166,7 +203,12 @@ class ServiceDiscovery:
                 del self._records_by_target[target]
 
     async def _request_once(self, service_protocol: ServiceProtocol) -> None:
+        if self._dns_sd_discovery:
+            await self._run_service_discovery_request()
         await self.client.send_question(DNSQuestion(service_protocol.to_name(), TYPE_PTR, CLASS_IN))
+
+    async def _run_service_discovery_request(self) -> None:
+        await self.client.send_question(DNSQuestion("_services._dns_sd._udp.local", TYPE_PTR, CLASS_IN))
 
     async def _on_response(self, response: DNSResponse) -> None:
         for message in self._records_of(response):
@@ -203,11 +245,11 @@ class ServiceDiscovery:
             self._enqueue_srv_for(name_list_to_name(pointer_data))
 
     def _enqueue_srv_for(self, srv_name: str) -> None:
-        self._enqueued_service_records.add(srv_name)
+        self._enqueued_service_records.add(srv_name.lower())
 
     def _on_srv_record(self, record: DNSRecord) -> None:
         if record.name in self._enqueued_service_records:
-            self._enqueued_service_records.remove(record.name)
+            self._enqueued_service_records.remove(record.name.lower())
 
         srv_name_items = record.name.split(".")
         if len(srv_name_items) < 4:
@@ -240,18 +282,26 @@ class ServiceDiscovery:
             old_response.refreshed_at = None
             old_response.invalid_at = response.invalid_at
 
-        self._records_by_target.setdefault(response.name, set()).add(response)
-        self._records_by_target.setdefault(response.target, set()).add(response)
+        self._records_by_target.setdefault(response.name.lower(), set()).add(response)
+        self._records_by_target.setdefault(response.target.lower(), set()).add(response)
         self._enqueued_target_records.add(srv_record.target)
 
-    def _on_a_record(self, record: DNSRecord) -> None:
-        if record.name in self._enqueued_target_records:
-            self._enqueued_target_records.remove(record.name)
+        for item in self._a_records_by_target_buffer:
+            if item.record.name.lower() in self._records_by_target:
+                self._on_a_record(item.record)
+                self._a_records_by_target_buffer.remove(item)
 
-        if record.name not in self._records_by_target:
+    def _on_a_record(self, record: DNSRecord) -> None:
+        record_name = record.name.lower()
+
+        if record_name in self._enqueued_target_records:
+            self._enqueued_target_records.remove(record_name)
+
+        if record_name not in self._records_by_target:
+            self._add_to_a_record_buffer(record)
             return
 
-        for item in self._records_by_target[record.name]:
+        for item in self._records_by_target[record_name]:
             ip_address = a_record_rdata_to_string(record.rdata)
             if ip_address not in item.ips:
                 self.dprint("Updating ip addresses for service {} by adding {}".format(item.name, ip_address))
@@ -266,3 +316,23 @@ class ServiceDiscovery:
     def dprint(self, message: str) -> None:
         if self.debug:
             print("MDNS Discovery: {}".format(message))
+
+    def _add_to_a_record_buffer(self, record: DNSRecord) -> None:
+        self.dprint("Adding A record which was not in active discovery to buffer {}".format(record))
+        self._a_records_by_target_buffer.add(record_buffer(record, time.ticks_ms() + self._a_records_buffer_timeout_ms))
+        self._ensure_no_buffer_overflow()
+
+    def _clean_up_buffer(self) -> None:
+        if len(self._a_records_by_target_buffer) == 0:
+            return
+        self._a_records_by_target_buffer = set(
+            filter(lambda record_buffer: record_buffer.invalid_at > time.ticks_ms(), self._a_records_by_target_buffer)
+        )
+
+    def _ensure_no_buffer_overflow(self) -> None:
+        if len(self._a_records_by_target_buffer) >= self._a_records_buffer_size:
+            records_buffer_ordered = sorted(
+                self._a_records_by_target_buffer, key=lambda record_buffer: record_buffer.invalid_at
+            )
+            records_buffer_ordered = records_buffer_ordered[: self._a_records_buffer_size]
+            self._a_records_by_target_buffer = set(records_buffer_ordered)

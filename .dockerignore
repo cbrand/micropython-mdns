@@ -1,4 +1,5 @@
 firmware.bin
+firmware.*.bin
 venv
 .ipynb_checkpoints
 main.py
