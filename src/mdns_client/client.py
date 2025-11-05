@@ -98,6 +98,7 @@ class Client:
 
     async def process_waiting_data(self) -> None:
         while not self.stopped:
+            await uasyncio.sleep_ms(0)
             readers, _, _ = select([self.socket], [], [], 0)
             if not readers:
                 break
@@ -107,8 +108,7 @@ class Client:
             except MemoryError:
                 # This seems to happen here without SPIRAM sometimes.
                 self.dprint(
-                    "Issue processing network data due to insufficient memory. "
-                    "Rebooting the socket to free up cache buffer."
+                    "Receiving data failed with MemoryError, replacing socket"
                 )
                 self._init_socket()
                 continue
