@@ -167,14 +167,16 @@ class Client:
     def _send_bytes(self, payload: bytes) -> None:
         if self.socket is None:
             self._init_socket()
-        try:
-            self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
-        except OSError:
-            # This sendto function sometimes returns an OSError with EBADF
-            # as a payload. To avoid a failure here, reiinitialize the socket
-            # and try again once.
-            self._init_socket()
-            self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
+        for _ in range(2):
+            try:
+                self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
+                break
+            except OSError as exc:
+                # This sendto function sometimes returns an OSError with EBADF
+                # as errno. To avoid a failure here, reinitialize the socket
+                # and try again.
+                self.dprint("Sending data failed with OSError(%s), replacing socket" % exc.args[0])
+                self._init_socket()
 
     async def getaddrinfo(
         self,
