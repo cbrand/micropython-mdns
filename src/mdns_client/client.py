@@ -98,6 +98,7 @@ class Client:
 
     async def process_waiting_data(self) -> None:
         while not self.stopped:
+            await uasyncio.sleep_ms(0)
             readers, _, _ = select([self.socket], [], [], 0)
             if not readers:
                 break
@@ -107,8 +108,7 @@ class Client:
             except MemoryError:
                 # This seems to happen here without SPIRAM sometimes.
                 self.dprint(
-                    "Issue processing network data due to insufficient memory. "
-                    "Rebooting the socket to free up cache buffer."
+                    "Receiving data failed with MemoryError, replacing socket"
                 )
                 self._init_socket()
                 continue
@@ -165,20 +165,18 @@ class Client:
         self._send_bytes(response.to_bytes())
 
     def _send_bytes(self, payload: bytes) -> None:
-        self._init_socket_if_not_done()
-        try:
-            self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
-        except OSError:
-            # This sendto function sometimes returns an OSError with EBADF
-            # as a payload. To avoid a failure here, reiinitialize the socket
-            # and try again once.
-            self._close_socket()
-            self._init_socket()
-            self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
-
-    def _init_socket_if_not_done(self) -> None:
         if self.socket is None:
             self._init_socket()
+        for _ in range(2):
+            try:
+                self.socket.sendto(payload, (MDNS_ADDR, MDNS_PORT))
+                break
+            except OSError as exc:
+                # This sendto function sometimes returns an OSError with EBADF
+                # as errno. To avoid a failure here, reinitialize the socket
+                # and try again.
+                self.dprint("Sending data failed with OSError(%s), replacing socket" % exc.args[0])
+                self._init_socket()
 
     async def getaddrinfo(
         self,
