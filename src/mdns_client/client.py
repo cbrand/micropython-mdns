@@ -56,25 +56,29 @@ class Client:
         self.callbacks[callback_config.id] = callback_config
         if self.stopped:
             self.dprint("Added consumer on stopped mdns client. Starting it now.")
-            self.stopped = False
             loop = uasyncio.get_event_loop()
             loop.create_task(self.start())
         return callback_config
+
+    def add_membership(self, sock=None) -> None:
+        if sock is None:
+            sock = self.socket
+        member_info = dotted_ip_to_bytes(MDNS_ADDR) + dotted_ip_to_bytes(self.local_addr)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, member_info)
 
     def _make_socket(self) -> socket.socket:
         self.dprint("Creating socket for address %s" % (self.local_addr))
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        member_info = dotted_ip_to_bytes(MDNS_ADDR) + dotted_ip_to_bytes(self.local_addr)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, member_info)
+        self.add_membership(sock)
         sock.setblocking(False)
         self.dprint("Socket creation finished")
         return sock
 
     async def start(self) -> None:
-        self.stopped = False
-        self._init_socket()
-        await self.consume()
+        if self.stopped:
+            self.stopped = False
+            await self.consume()
 
     def _init_socket(self) -> None:
         self._close_socket()
@@ -92,6 +96,8 @@ class Client:
         self.socket = None
 
     async def consume(self) -> None:
+        self.dprint("Starting mdns client consume loop.")
+        self._init_socket()
         while not self.stopped:
             await self.process_waiting_data()
             await uasyncio.sleep_ms(100)
