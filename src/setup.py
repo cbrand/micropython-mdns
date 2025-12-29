@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (3, 11)
-EGG_NAME = "micropython-mdns"
+EGG_NAME = "micropython_mdns"
 
 
 def list_packages(source_directory: str = ".") -> List[str]:
