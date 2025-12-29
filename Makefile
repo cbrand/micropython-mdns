@@ -4,7 +4,7 @@ build-compile: build compile
 TTY_PORT?=/dev/ttyUSB0
 PWD?=$(shell pwd)
 DNS_VOLUME_NAME?=mdns-build-volume
-NEWEST_MICROPYTHON_VERSION?=1.26
+NEWEST_MICROPYTHON_VERSION?=1.27
 
 erase:
 	esptool.py --chip esp32 --port ${TTY_PORT} erase_flash
@@ -44,11 +44,19 @@ compile-micropython-esp32-1-26:
 compile-micropython-rp2-1-26:
 	MICROPYTHON_VERSION=1.26 MICROPYTHON_PORT=rp2 ./build-and-copy-firmware.sh
 
-compile-newest: compile-micropython-esp32-1-26
+compile-micropython-1-27: compile-micropython-esp32-1-27 compile-micropython-rp2-1-27
+
+compile-micropython-esp32-1-27:
+	MICROPYTHON_VERSION=1.27 MICROPYTHON_PORT=esp32 ./build-and-copy-firmware.sh
+
+compile-micropython-rp2-1-27:
+	MICROPYTHON_VERSION=1.27 MICROPYTHON_PORT=rp2 ./build-and-copy-firmware.sh
+
+compile-newest: compile-micropython-esp32-1-27
 	docker cp helper:/data/firmware.mp.${NEWEST_MICROPYTHON_VERSION}.esp32.bin ./firmware.bin
 	docker rm helper
 
-compile: compile-micropython-1-24 compile-micropython-1-25 compile-micropython-1-26
+compile: compile-micropython-1-24 compile-micropython-1-25 compile-micropython-1-26 compile-micropython-1-27
 
 install: erase compile-newest flash copy-main
 
